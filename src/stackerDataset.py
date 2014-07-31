@@ -6,7 +6,7 @@ import os
 import datetime
 import numpy
 from osgeo import gdal
-from image_tools import get_tiles
+from EOtools import get_tiles
 
 
 def PQapplyDict():
