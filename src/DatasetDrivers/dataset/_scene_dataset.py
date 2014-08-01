@@ -402,11 +402,9 @@ class SceneDataset(Dataset):
 
                             try:
                                 self._root_dataset = gdal.Open(self._root_dataset_pathname, self._eAccess)
-                            except:
+                            except (RuntimeError) as e:
                                 self._root_dataset = None
                                 raise DSException(e.message)
-
-                            self.pq_tests_run = int(suffix, base=2)
 
                             self._sub_datasets.append(self._root_dataset)
 
@@ -699,6 +697,15 @@ class SceneDataset(Dataset):
         This is called after read_metadata(). Any derived vales should be set here.
         """
 
+        #
+        # Keep the original start and end datetimes (direct from the
+        # metadata) as alternate start and end datetimes. These can
+        # provide values where the scene_center_time is not available.
+        #
+
+        self.scene_alt_start_datetime = self.scene_start_datetime
+        self.scene_alt_end_datetime = self.scene_end_datetime
+
         if self.scene_centre_date and self.scene_centre_time:
             self.scene_centre_datetime = datetime(
                 self.scene_centre_date.year,
@@ -727,6 +734,12 @@ class SceneDataset(Dataset):
                 self.completion_time.microsecond)
         else:
             self.completion_datetime = None
+
+        # Pixel Quality tests run - this information is extracted from the
+        # data quality statement in the metadata.
+
+        if self.processor_level == 'Pixel Quality':
+            self.pq_tests_run = self.__parse_pq_tests_run()
 
         # SPATIAL REFERENCE GENERAL CASE
         # Use the projection and geotransform that GDAL gives us.
@@ -947,6 +960,28 @@ class SceneDataset(Dataset):
         if self.zone and self.zone < 0 and self.datum == 'GDA94' and self.earth_ellipsoid == 'GRS80':
             self.zone = abs(self.zone)
             self.update_metadata('zone')
+
+    def __parse_pq_tests_run(self):
+        """
+        Extract the pq_tests_run bit mask from the metadata.
+
+        This is obtained by parsing the data quatlity statement from the XML
+        metadata. The statement is availble the attribute dq_statement, set
+        by read_metadata as specified in _scene_dataset.xml.
+        """
+
+        if self.dq_statement:
+            bit_string_list = re.findall(r'\(Bit (\d+)\): (Run|Not Run)',
+                                         self.dq_statement)
+            pq_tests_run = 0
+            for (bit_no_str, bit_run_str) in bit_string_list:
+                bit_no = int(bit_no_str)
+                bit_val = 1 if bit_run_str == 'Run' else 0
+                pq_tests_run |= bit_val << bit_no
+        else:
+            pq_tests_run = None
+
+        return pq_tests_run
 
     def __get_mtl_bias_gain(self):
         '''
