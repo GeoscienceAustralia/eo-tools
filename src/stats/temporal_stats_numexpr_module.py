@@ -10,13 +10,10 @@ from osgeo import gdal
 from datetime import datetime
 import numexpr
 
-# adding my home path to get my 'get_tiles' module
-sys.path.append('/home/547/jps547')
-
-import get_tiles
+from EOtools import tiling
 
 # Author: Josh Sixsmith; joshua.sixsmith@ga.gov.au
-'''
+"""
     Calculates statistics over the temporal/spectral/z domain of an array
     containing [z,y,x] data.
     Statistics produced in this order are:
@@ -62,7 +59,7 @@ import get_tiles
     required from the command line, as the script will attempt to find the
     no data value from the metadata.
 
-'''
+"""
 
 NaN = numpy.float32(numpy.NaN)
 
@@ -129,7 +126,7 @@ def main(infile, outfile, file_driver='ENVI', xtile=None, ytile=None, noData=Non
     if (ytile is None):
         ytile = 100
 
-    tiles = get_tiles.get_tile3(samples, lines, xtile, ytile)
+    tiles = tiling.generate_tiles(samples, lines, xtile, ytile)
     print('number of tiles: ', len(tiles))
 
     # set zero point for time and make copies for each section needing times
@@ -214,7 +211,7 @@ def main(infile, outfile, file_driver='ENVI', xtile=None, ytile=None, noData=Non
 
 
 def temporal_stats(array, no_data=None, as_bip=False):
-    '''Calculates statistics over the temporal/spectral/z domain.
+    """Calculates statistics over the temporal/spectral/z domain.
 
     Calculates statistics over the temporal/spectral/z domain of an array
     containing [z,y,x] data.
@@ -255,7 +252,7 @@ def temporal_stats(array, no_data=None, as_bip=False):
     Author:
         Josh Sixsmith; joshua.sixsmith@ga.gov.au
 
-    '''
+    """
 
     # assuming a 3D array, [bands,rows,cols]
     dims = array.shape

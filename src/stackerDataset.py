@@ -6,7 +6,7 @@ import os
 import datetime
 import numpy
 from osgeo import gdal
-from EOtools import get_tiles
+from EOtools.tiling import generate_tiles
 
 
 def PQapplyDict():
@@ -370,7 +370,7 @@ class StackerDataset:
             Each tuple contains (ystart,yend,xstart,xend).
         """
 
-        self.tiles = get_tiles(self.samples, self.lines, xtile=xsize, ytile=ysize)
+        self.tiles = generate_tiles(self.samples, self.lines, xtile=xsize, ytile=ysize)
         self.nTiles = len(self.tiles)
 
     def getTile(self, index=0):
