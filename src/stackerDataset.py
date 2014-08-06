@@ -102,6 +102,14 @@ def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=Fal
         print "flags must be of type dict. Retrieving default PQ flags dict."
         flags = PQapplyDict()
 
+    # Check for existance of invert
+    if invert is None:
+        invert = PQapplyInvertDict()
+    elif type(invert) != dict:
+        print "invert must be of type dict. Retrieving default PQ invert dict."
+        invert = PQapplyInvertDict()
+
+    # Check for correct dimensionality
     if array.ndim != 2:
         raise Exception('Error. Array dimensions must be 2D, not %i' %array.ndim)
 
