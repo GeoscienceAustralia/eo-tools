@@ -9,7 +9,7 @@ import xml.dom.minidom
 from StringIO import StringIO
 import logging, os, re
 
-from DatasetDrivers.utils import unicode_to_ascii
+from EOtools.utils import unicode_to_ascii
 from . import Metadata
 
 logger = logging.getLogger('root.' + __name__)

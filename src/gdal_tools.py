@@ -4,8 +4,8 @@ Some tools used to work with GDAL.
 
 import os, sys, logging, numpy
 from osgeo import gdal, osr
-from execute import execute
-from DatasetDrivers.meta import print_call
+from EOtools.execute import execute
+from EOtools.meta import print_call
 
 logger = logging.getLogger('root.' + __name__)
 
