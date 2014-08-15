@@ -14,12 +14,12 @@ from datetime import datetime, date, time
 import xml.dom.minidom
 from osgeo import gdal, gdalconst, osr
 
-from DatasetDrivers.bodies import Satellite
-from DatasetDrivers.bodies import geocentric_lat
-from DatasetDrivers.metadata import Metadata, XMLMetadata, MTLMetadata, ReportMetadata
-from DatasetDrivers.utils import find_files
-from DatasetDrivers.utils import unicode_to_ascii
-from DatasetDrivers.gdal_tools import ImageShape
+from EOtools.bodies import Satellite
+from EOtools.bodies import geocentric_lat
+from EOtools.metadata import Metadata, XMLMetadata, MTLMetadata, ReportMetadata
+from EOtools.utils import find_files
+from EOtools.utils import unicode_to_ascii
+from EOtools.gdal_tools import ImageShape
 
 from . import Dataset, DSException
 

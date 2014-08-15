@@ -13,7 +13,7 @@ import logging
 import os
 import re
 
-from DatasetDrivers.utils import unicode_to_ascii
+from EOtools.utils import unicode_to_ascii
 from . import Metadata
 
 logger = logging.getLogger('root.' + __name__)
