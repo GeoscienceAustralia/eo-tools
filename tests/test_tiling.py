@@ -43,7 +43,7 @@ import unittest
 
 import numpy
 
-import tiling
+import EOtools.tiling
 
 
 class TestGetTile3(unittest.TestCase):
