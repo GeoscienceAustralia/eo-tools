@@ -36,7 +36,7 @@ makes some of the code harder to follow.
 """
 
 import numpy, logging
-from EOtools.meta import print_call
+from meta import print_call
 
 logger = logging.getLogger('root.' + __name__)
 
