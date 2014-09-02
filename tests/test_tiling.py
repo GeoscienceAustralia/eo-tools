@@ -43,17 +43,17 @@ import unittest
 
 import numpy
 
-import EOtools.tiling
+from EOtools import tiling
 
 
 class TestGetTile3(unittest.TestCase):
 
-    """Unit tests for generate_tiles function."""
+    """Unit tests for tiling.generate_tiles function."""
 
     # pylint: disable=too-many-public-methods
 
     # Input data for tests. These are tuples (samples, lines, xtile, ytile)
-    # used as arguments to the generate_tiles function during testing.
+    # used as arguments to the tiling.generate_tiles function during testing.
 
     normal_input = [(4000, 4000, 100, 100), (4001, 4001, 100, 100),
                     (4001, 4003, 97, 101)]
@@ -89,7 +89,7 @@ class TestGetTile3(unittest.TestCase):
     def test_exception_1(self):
         """Test empty image:"""
         for (samples, lines, xtile, ytile) in self.exception_input1:
-            tiles_list = generate_tiles(samples, lines, xtile, ytile)
+            tiles_list = tiling.generate_tiles(samples, lines, xtile, ytile)
             self.assertEqual(tiles_list, [], 'Expected an empty tile list.')
 
     def test_exception_2(self):
@@ -97,13 +97,13 @@ class TestGetTile3(unittest.TestCase):
         for (samples, lines, xtile, ytile) in self.exception_input2:
             self.assertRaises(
                 (ArithmeticError, AssertionError),
-                generate_tiles,
+                tiling.generate_tiles,
                 samples, lines, xtile, ytile)
 
     def do_test(self, test_input):
         """Check sizes and coverage for a list of test input."""
         for (samples, lines, xtile, ytile) in test_input:
-            tiles_list = generate_tiles(samples, lines, xtile, ytile)
+            tiles_list = tiling.generate_tiles(samples, lines, xtile, ytile)
 
             self.check_sizes(xtile, ytile, tiles_list)
             self.check_tiling(samples, lines, tiles_list)
