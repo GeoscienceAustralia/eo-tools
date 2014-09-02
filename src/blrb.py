@@ -38,7 +38,7 @@ makes some of the code harder to follow.
 from __future__ import absolute_import
 import numpy
 import logging
-from EOtools.meta import print_call
+from .meta import print_call
 
 logger = logging.getLogger('root.' + __name__)
 
