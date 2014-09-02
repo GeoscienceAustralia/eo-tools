@@ -37,7 +37,7 @@ Created on 02/09/2014
 
 from __future__ import absolute_import
 import unittest
-import execute
+from EOtools.execute import execute
 
 
 class TestExecute(unittest.TestCase):

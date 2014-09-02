@@ -40,7 +40,7 @@ import unittest
 import os
 import logging
 import subprocess
-from utils import log_multiline
+from EOtools.utils import log_multiline
 
 
 class TestLogMultiline(unittest.TestCase):
