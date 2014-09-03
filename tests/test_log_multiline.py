@@ -47,7 +47,7 @@ class TestLogMultiline(unittest.TestCase):
 
     """Unit tests for the log_multiline utility function."""
 
-    MODULE = 'cube_util'
+    MODULE = 'EOtools.utils'
     SUITE = 'TestLogMultiline'
 
     OUTPUT_DIR = '.'  # dbutil.output_directory(MODULE, SUITE)
