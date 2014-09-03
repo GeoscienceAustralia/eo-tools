@@ -44,12 +44,12 @@ import unittest
 
 import numpy
 
-import tiling
+from EOtools import tiling
 
 
 class TestGetTile3(unittest.TestCase):
 
-    """Unit tests for generate_tiles function."""
+    """Unit tests for tiling.generate_tiles function."""
 
     # pylint: disable=too-many-public-methods
 
