@@ -100,11 +100,15 @@ def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=Fal
     :param flags:
         A dictionary containing each PQ flag and a boolean value
         determining if that flag is to be extracted.
+        If None; then this routine will get the default PQ flags dictionary
+        which is True for all flags.
 
     :param invert:
         A dictionary containing each PQ flag and a boolean value
         determining if that flag is to be inverted once extracted.
         Useful if you want to investigate that pheonomena.
+        If None; then this routine will get the default invert flags dictionary
+        which is False for all flags.
 
     :param check_zero:
         A boolean keyword as to whether or not the PQ bit array should
@@ -125,6 +129,20 @@ def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=Fal
         If either the flags or invert dictionaries contain incorrect
         keys, then they will be reported and ignored during bit
         extraction.
+
+    Example:
+
+        >>> # This will automatically get the default PQ and inversion flags
+        >>> # and combine the result into a single boolean array
+        >>> pq = stackerDataset.extractPQFlags(img, check_zero=True, combine=True)
+        >>> # For this example, we'll only extract the cloud flags, invert them
+        >>> # so we only have the cloud data, and combine them into a single
+        >>> # boolean array
+        >>> d = stackerDataset.PQapplyInvertDict()
+        >>> # The PQapplyInvertDict() returns False for every flag
+        >>> d['ACCA'] = True
+        >>> d['Fmask'] = True
+        >>> pq = stackerDataset.extractPQFlags(img, check_zero=True, combine=True, invert=d, flags=d)
     """
 
     # Check for existance of flags
@@ -190,7 +208,13 @@ def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=Fal
     if check_zero:
         zero = array == 0
         if combine:
-            mask = numpy.zeros(dims, dtype='bool')
+            # When combining we need to turn pixels to False, therefore
+            # we initialise as True:
+            #     True & True = True
+            #     True & False =  False
+            #     False & True = False
+            #     False & False = False
+            mask = numpy.ones(dims, dtype='bool')
             for b, v, i in container:
                 if i:
                     mask &= ~((array & v) >> b).astype('bool')
@@ -208,7 +232,13 @@ def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=Fal
             mask[:, zero] = True
     else:
         if combine:
-            mask = numpy.zeros(dims, dtype='bool')
+            # When combining we need to turn pixels to False, therefore
+            # we initialise as True:
+            #     True & True = True
+            #     True & False =  False
+            #     False & True = False
+            #     False & False = False
+            mask = numpy.ones(dims, dtype='bool')
             for b, v, i in container:
                 if i:
                     mask &= ~((array & v) >> b).astype('bool')
@@ -309,6 +339,9 @@ class StackerDataset:
         self.bands = ds.RasterCount
         self.samples = ds.RasterXSize
         self.lines = ds.RasterYSize
+
+        self.projection = ds.GetProjection()
+        self.geotransform = ds.getGeoTransform()
 
         # Initialise the tile variables
         self.tiles = [None]
