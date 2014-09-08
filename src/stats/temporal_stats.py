@@ -525,14 +525,14 @@ def get_pixel_provenance(input_dataset, output_dataset, median_index_layer=11, d
         # Look up satellite ID
         try:
             # Use trailing digits from satellite tag to create satellite ID integer.
-            satellite_id = int(re.search('\d+$', layer_metadata.get('satellite')).group(0))
-        except AttributeError:
+            satellite_id = int(re.search('\d+$', layer_metadata.get('satellite_tag')).group(0))
+        except (AttributeError, TypeError):
             satellite_id = 0
 
         try:
             start_datetime = datetime.strptime(
                 layer_metadata.get('start_datetime'),
-                '%Y-%m-%dT%H:%M:%S.%f')  # e.g: 2010-03-30T23:59:33.942044
+                '%Y-%m-%d %H:%M:%S.%f')  # e.g: 2010-03-30T23:59:33.942044
         except ValueError:
             start_datetime = None
 
