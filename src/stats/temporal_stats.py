@@ -33,6 +33,7 @@ import os
 import sys
 import argparse
 import numpy
+import re
 from osgeo import gdal
 from datetime import datetime
 import numexpr
@@ -508,8 +509,6 @@ def get_pixel_provenance(input_dataset, output_dataset, median_index_layer=11, d
     def seconds_since_epoch(dt):
         return (dt - datetime.utcfromtimestamp(0)).total_seconds()
 
-    satellite_id_lookup = {'LS5': 5, 'LS7': 7}
-
     median_index_array = output_dataset.GetRasterBand(median_index_layer).ReadAsArray()
 
 #    log_multiline(logger.debug, median_index_array, 'median_index_array', '\t')
@@ -524,7 +523,11 @@ def get_pixel_provenance(input_dataset, output_dataset, median_index_layer=11, d
         layer_metadata = input_dataset.GetRasterBand(layer_index + 1).GetMetadata()
 
         # Look up satellite ID
-        satellite_id = satellite_id_lookup.get(layer_metadata.get('satellite'))
+        try:
+            # Use trailing digits from satellite tag to create satellite ID integer.
+            satellite_id = int(re.search('\d+$', layer_metadata.get('satellite')).group(0))
+        except AttributeError:
+            satellite_id = 0
 
         try:
             start_datetime = datetime.strptime(
