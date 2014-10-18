@@ -91,6 +91,6 @@ def generate_tiles(samples, lines, xtile=100, ytile=100):
                 xend = xstep + xtile
             else:
                 xend = ncols
-            tiles.append((ystep,yend,xstep, xend))
+            tiles.append(((ystep,yend),(xstep, xend)))
     return tiles
 
