@@ -31,9 +31,11 @@ import numpy
 
 #Author: Josh Sixsmith; joshua.sixsmith@ga.gov.au
 
-def generate_tiles(samples, lines, xtile=100, ytile=100):
+def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
     """
     Generates a list of tile indices for a 2D array.
+    If Generator is set to True (Default), then a Python generator
+    object will be returned rather than a list.
 
     :param samples:
         An integer expressing the total number of samples in an array.
@@ -49,20 +51,28 @@ def generate_tiles(samples, lines, xtile=100, ytile=100):
         (Optional) The desired size of the tile in the y-direction.
         Default is 100.
 
+    :param Generator:
+        A boolean indicating if a Python generator should be returned
+        rather than a list.  True (Default) will return a Python
+        generator object.
+
     :return:
-        A list of tuples containing the precalculated tiles used for
-        indexing a larger array.
-        Each tuple contains (ystart,yend,xstart,xend).
+        If Generator is set to True (Default), then a Python generator
+        object will be returned. If set to False then a list of tuples
+        containing the precalculated tiles used for indexing a larger
+        array.
+        Each tuple in the list or generator contains
+        ((ystart,yend),(xstart,xend)).
 
     Example:
 
-        >>> tiles = generate_tiles(8624, 7567, xtile=1000,ytile=400)
+        >>> tiles = generate_tiles(8624, 7567, xtile=1000, ytile=400, Generator=False)
         >>>
         >>> for tile in tiles:
-        >>>     ystart = int(tile[0])
-        >>>     yend   = int(tile[1])
-        >>>     xstart = int(tile[2])
-        >>>     xend   = int(tile[3])
+        >>>     ystart = int(tile[0][0])
+        >>>     yend   = int(tile[0][1])
+        >>>     xstart = int(tile[1][0])
+        >>>     xend   = int(tile[1][1])
         >>>     xsize  = int(xend - xstart)
         >>>     ysize  = int(yend - ystart)
         >>>
@@ -78,19 +88,33 @@ def generate_tiles(samples, lines, xtile=100, ytile=100):
     """
     ncols = samples
     nrows = lines
-    tiles = []
     xstart = numpy.arange(0,ncols,xtile)
     ystart = numpy.arange(0,nrows,ytile)
-    for ystep in ystart:
-        if ystep + ytile < nrows:
-            yend = ystep + ytile
-        else:
-            yend = nrows
-        for xstep in xstart:
-            if xstep + xtile < ncols:
-                xend = xstep + xtile
+
+    if Generator:
+        for ystep in ystart:
+            if ystep + ytile < nrows:
+                yend = ystep + ytile
             else:
-                xend = ncols
-            tiles.append(((ystep,yend),(xstep, xend)))
-    return tiles
+                yend = nrows
+            for xstep in xstart:
+                if xstep + xtile < ncols:
+                    xend = xstep + xtile
+                else:
+                    xend = ncols
+                yield ((ystep,yend),(xstep, xend))
+    else:
+        tiles = []
+        for ystep in ystart:
+            if ystep + ytile < nrows:
+                yend = ystep + ytile
+            else:
+                yend = nrows
+            for xstep in xstart:
+                if xstep + xtile < ncols:
+                    xend = xstep + xtile
+                else:
+                    xend = ncols
+                tiles.append(((ystep,yend),(xstep, xend)))
+        return tiles
 
