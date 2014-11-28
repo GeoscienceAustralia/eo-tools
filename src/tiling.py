@@ -88,34 +88,43 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
         >>>     subset = array[ystart:yend,xstart:xend] # 2D
         >>>     subset = array[:,ystart:yend,xstart:xend] # 3D
     """
-    ncols = samples
-    nrows = lines
-    xstart = numpy.arange(0, ncols, xtile)
-    ystart = numpy.arange(0, nrows, ytile)
-
-    if Generator:
+    def tiles_generator(samples, lines, xstart, ystart):
+        """
+        Creates a generator object for the tiles.
+        """
         for ystep in ystart:
-            if ystep + ytile < nrows:
+            if ystep + ytile < lines:
                 yend = ystep + ytile
             else:
-                yend = nrows
+                yend = lines
             for xstep in xstart:
-                if xstep + xtile < ncols:
+                if xstep + xtile < samples:
                     xend = xstep + xtile
                 else:
-                    xend = ncols
+                    xend = samples
                 yield ((ystep, yend), (xstep, xend))
-    else:
+
+    def tiles_list(samples, lines, xstart, ystart):
+        """
+        Creates a list of tiles.
+        """
         tiles = []
         for ystep in ystart:
-            if ystep + ytile < nrows:
+            if ystep + ytile < lines:
                 yend = ystep + ytile
             else:
-                yend = nrows
+                yend = lines
             for xstep in xstart:
-                if xstep + xtile < ncols:
+                if xstep + xtile < samples:
                     xend = xstep + xtile
                 else:
-                    xend = ncols
+                    xend = samples
                 tiles.append(((ystep, yend), (xstep, xend)))
         return tiles
+
+    xstart = numpy.arange(0, samples, xtile)
+    ystart = numpy.arange(0, lines, ytile)
+    if Generator:
+        return tiles_generator(samples, lines, xstart, ystart)
+    else:
+        return tiles_list(samples, lines, xstart, ystart)
