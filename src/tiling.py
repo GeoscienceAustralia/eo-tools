@@ -33,7 +33,7 @@ import numpy
 # Author: Josh Sixsmith; joshua.sixsmith@ga.gov.au
 
 
-def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
+def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=False):
     """
     Generates a list of tile indices for a 2D array.
     If Generator is set to True (Default), then a Python generator
@@ -55,8 +55,8 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
 
     :param Generator:
         A boolean indicating if a Python generator should be returned
-        rather than a list.  True (Default) will return a Python
-        generator object.
+        rather than a list.  True will return a Python generator
+        object. Default is False.
 
     :return:
         If Generator is set to True (Default), then a Python generator
@@ -68,7 +68,7 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
 
     Example:
 
-        >>> tiles = generate_tiles(8624, 7567, xtile=1000, ytile=400, Generator=False)
+        >>> tiles = generate_tiles(8624, 7567, xtile=1000, ytile=400)
         >>>
         >>> for tile in tiles:
         >>>     ystart = int(tile[0][0])
