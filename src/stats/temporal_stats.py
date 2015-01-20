@@ -154,7 +154,7 @@ def main(infile, outfile, file_driver='ENVI', xtile=None, ytile=None, noData=Non
     if (ytile is None):
         ytile = 100
 
-    tiles = tiling.generate_tiles(samples, lines, xtile, ytile)
+    tiles = tiling.generate_tiles(samples, lines, xtile, ytile, Generator=False)
     print('number of tiles: ', len(tiles))
 
     # set zero point for time and make copies for each section needing times
@@ -170,10 +170,10 @@ def main(infile, outfile, file_driver='ENVI', xtile=None, ytile=None, noData=Non
         # want total reading, writing, processing times, and averages.
         time_tile_start = datetime.now()
 
-        ystart = int(tile[0])
-        yend = int(tile[1])
-        xstart = int(tile[2])
-        xend = int(tile[3])
+        ystart = int(tile[0][0])
+        yend = int(tile[0][1])
+        xstart = int(tile[1][0])
+        xend = int(tile[1][1])
 
         xsize = int(xend - xstart)
         ysize = int(yend - ystart)
