@@ -36,7 +36,7 @@ from osgeo import gdal
 from EOtools.tiling import generate_tiles
 
 
-def PQapplyDict():
+def pq_apply_dict():
     """
     Return a dictionary containing boolean values on whether or not
     to apply a PQ quality flag.
@@ -63,7 +63,7 @@ def PQapplyDict():
     return d
 
 
-def PQapplyInvertDict():
+def pq_apply_invert_dict():
     """
     Return a dictionary containing boolean values on whether or not
     to apply a PQ quality flag inversely.
@@ -90,7 +90,8 @@ def PQapplyInvertDict():
     return d
 
 
-def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=False):
+def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
+                     combine=False):
     """
     Extracts pixel quality flags from the pixel quality bit array.
 
@@ -134,34 +135,35 @@ def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=Fal
 
         >>> # This will automatically get the default PQ and inversion flags
         >>> # and combine the result into a single boolean array
-        >>> pq = stackerDataset.extractPQFlags(img, check_zero=True, combine=True)
+        >>> pq = stackerDataset.extract_pq_flags(img, check_zero=True, combine=True)
         >>> # For this example, we'll only extract the cloud flags, invert them
         >>> # so we only have the cloud data, and combine them into a single
         >>> # boolean array
-        >>> d = stackerDataset.PQapplyInvertDict()
+        >>> d = stackerDataset.pq_apply_invert_dict()
         >>> # The PQapplyInvertDict() returns False for every flag
         >>> d['ACCA'] = True
         >>> d['Fmask'] = True
-        >>> pq = stackerDataset.extractPQFlags(img, check_zero=True, combine=True, invert=d, flags=d)
+        >>> pq = stackerDataset.extract_pq_flags(img, check_zero=True, combine=True, invert=d, flags=d)
     """
 
     # Check for existance of flags
     if flags is None:
-        flags = PQapplyDict()
+        flags = pq_apply_dict()
     elif not isinstance(flags, dict):
         print("flags must be of type dict. Retrieving default PQ flags dict.")
-        flags = PQapplyDict()
+        flags = pq_apply_dict()
 
     # Check for existance of invert
     if invert is None:
-        invert = PQapplyInvertDict()
+        invert = pq_apply_invert_dict()
     elif not isinstance(invert, dict):
         print("invert must be of type dict. Retrieving default PQ invert dict.")
-        invert = PQapplyInvertDict()
+        invert = pq_apply_invert_dict()
 
     # Check for correct dimensionality
     if array.ndim != 2:
-        raise Exception('Error. Array dimensions must be 2D, not %i' % array.ndim)
+        msg = 'Error. Array dimensions must be 2D, not {}'.format(array.ndim)
+        raise Exception(msg)
 
     # image dimensions
     dims = array.shape
@@ -197,7 +199,7 @@ def extractPQFlags(array, flags=None, invert=None, check_zero=False, combine=Fal
             bits.append(bit_shift[k]['bit'])
             invs.append(invert[k])
         else:
-            print("Skipping PQ flag %s" % k)
+            print("Skipping PQ flag {}".format(k))
 
     # sort via bits
     container = sorted(zip(bits, values, invs))
@@ -288,16 +290,16 @@ class StackerDataset:
         AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0],
         UNIT["degree",0.0174532925199433],AUTHORITY["EPSG","4326"]]'
         >>> # Initialise the yearly iterator
-        >>> ds.initYearlyIterator()
+        >>> ds.init_yearly_iterator()
         >>> # Get the yearly iterator dictionary
-        >>> ds.getYearlyIterator()
+        >>> ds.get_yearly_iterator()
         {1995: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
             1996: [16, 17, 18, 19, 20, 21, 22]}
         >>> # Get the datetime of the first raster band
-        >>> ds.getRasterBandDatetime()
+        >>> ds.get_raster_band_datetime()
         datetime.datetime(1995, 7, 2, 23, 19, 48, 452050)
         >>> # Get the metadata of the first raster band
-        >>> ds.getRasterBandMetadata()
+        >>> ds.get_raster_band_metadata()
         {'start_datetime': '1995-07-02 23:19:48.452050', 'sensor_name': 'TM',
          'start_row': '83', 'end_row': '83', 'band_name': 'Bare Soil',
          'satellite_tag': 'LS5', 'cloud_cover': 'None', 'tile_layer': '3',
@@ -309,24 +311,24 @@ class StackerDataset:
          'y_index': '-35', 'x_index': '144', 'nodata_value': '-999'}
         >>> # Initialise the x & y block tiling sequence, using a block size
         >>> # of 400x by 400y
-        >>> ds.initTiling(400,400)
+        >>> ds.init_tiling(400,400)
         >>> # Number of tiles
-        >>> ds.nTiles
+        >>> ds.n_tiles
         100
         >>> # Get the 11th tile (zero based index)
-        >>> ds.getTile(10)
+        >>> ds.get_tile(10)
         (400, 800, 0, 400)
         >>> # Read a single raster band. The 10th raster band (one based index)
-        >>> img = ds.readRasterBand(10)
+        >>> img = ds.read_raster_band(10)
         >>> img.shape
         (4000, 4000)
         >>> # Read only a tile of a single raster band
         >>> # First tile, 10th raster band
-        >>> img = ds.readTile(ds.getTile(0), 10)
+        >>> img = ds.read_tile(ds.get_tile(0), 10)
         >>> img.shape
         (400, 400)
         >>> # Read all raster bands for the 24th tile
-        >>> img = ds.readTileAllRasters(ds.getTile(23))
+        >>> img = ds.read_tile_all_rasters(ds.get_tile(23))
         >>> img.shape
         (22, 400, 400)
     """
@@ -336,7 +338,8 @@ class StackerDataset:
         Initialise the class structure.
 
         :param file:
-            A string containing the full filepath of a GDAL compliant dataset created by stacker.py.
+            A string containing the full filepath of a GDAL compliant
+            dataset created by stacker.py.
         """
 
         self.fname = filename
@@ -349,7 +352,7 @@ class StackerDataset:
         self.lines = ds.RasterYSize
 
         self.projection = ds.GetProjection()
-        self.geotransform = ds.getGeoTransform()
+        self.geotransform = ds.GetGeoTransform()
 
         # Initialise the tile variables
         self.tiles = [None]
@@ -358,9 +361,10 @@ class StackerDataset:
         # Close the dataset
         ds = None
 
-    def getRasterBandMetadata(self, raster_band=1):
+    def get_raster_band_metadata(self, raster_band=1):
         """
-        Retrives the metadata for a given band_index. (Default is the first band).
+        Retrives the metadata for a given band_index.
+        (Default is the first band).
 
         :param raster_band:
             The band index of interest. Default is the first band.
@@ -383,7 +387,7 @@ class StackerDataset:
 
         return metadata
 
-    def getRasterBandDatetime(self, raster_band=1):
+    def get_raster_band_datetime(self, raster_band=1):
         """
         Retrieves the datetime for a given raster band index.
 
@@ -394,94 +398,103 @@ class StackerDataset:
             A Python datetime object.
         """
 
-        metadata = self.getRasterBandMetadata(raster_band)
+        metadata = self.get_raster_band_metadata(raster_band)
         dt_item = metadata['start_datetime']
         start_dt = datetime.datetime.strptime(dt_item, "%Y-%m-%d %H:%M:%S.%f")
 
         return start_dt
 
-    def initYearlyIterator(self):
+    def init_yearly_iterator(self):
         """
-        Creates an interative dictionary containing all the band indices available for each year.
+        Creates an interative dictionary containing all the band
+        indices available for each year.
         """
 
-        self.yearlyIterator = {}
+        self.yearly_iterator = {}
 
         band_list = [1]  # Initialise to the first band
-        yearOne = self.getRasterBandDatetime().year
+        yearOne = self.get_raster_band_datetime().year
 
-        self.yearlyIterator[yearOne] = band_list
+        self.yearly_iterator[yearOne] = band_list
 
         for i in range(2, self.bands + 1):
-            year = self.getRasterBandDatetime(raster_band=i).year
+            year = self.get_raster_band_datetime(raster_band=i).year
             if year == yearOne:
                 band_list.append(i)
-                self.yearlyIterator[yearOne] = band_list
+                self.yearly_iterator[yearOne] = band_list
             else:
-                self.yearlyIterator[yearOne] = band_list
+                self.yearly_iterator[yearOne] = band_list
                 yearOne = year
                 band_list = [i]
 
-    def getYearlyIterator(self):
+    def get_yearly_iterator(self):
         """
-        Returns the yearly iterator dictionary created by setYearlyIterator.
+        Returns the yearly iterator dictionary created by init_yearly_iterator.
         """
 
-        return self.yearlyIterator
+        return self.yearly_iterator
 
-    def initTiling(self, xsize=100, ysize=100):
+    def init_tiling(self, xsize=100, ysize=100):
         """
         Sets the tile indices for a 2D array.
 
         :param xsize:
-            Define the number of samples/columns to be included in a single tile.
-            Default is 100
+            Define the number of samples/columns to be included in a
+            single tile.
+            Default is 100.
 
         :param ysize:
-            Define the number of lines/rows to be included in a single tile.
+            Define the number of lines/rows to be included in a single
+            tile.
             Default is 100.
 
         :return:
-            A list containing a series of tuples defining the individual 2D tiles/chunks to be indexed.
-            Each tuple contains (ystart,yend,xstart,xend).
+            A list containing a series of tuples defining the
+            individual 2D tiles/chunks to be indexed.
+            Each tuple contains ((ystart, yend), (xstart, xend)).
         """
 
-        self.tiles = generate_tiles(self.samples, self.lines, xtile=xsize, ytile=ysize)
+        self.tiles = generate_tiles(self.samples, self.lines, xtile=xsize,
+                                    ytile=ysize, Generator=False)
         self.nTiles = len(self.tiles)
 
-    def getTile(self, index=0):
+    def get_tile(self, index=0):
         """
         Retrieves a tile given an index.
 
         :param index:
-            An integer containing the location of the tile to be used for array indexing.
+            An integer containing the location of the tile to be used
+            for array indexing.
             Defaults to the first tile.
 
         :return:
-            A tuple containing the start and end array indices, of the form (ystart,yend,xstart,xend).
+            A tuple containing the start and end array indices, of the
+            form ((ystart, yend), (xstart, xend)).
         """
 
         tile = self.tiles[index]
 
         return tile
 
-    def readTile(self, tile, raster_band=1):
+    def read_tile(self, tile, raster_band=1):
         """
-        Read an x & y block specified by tile for a given raster band using GDAL.
+        Read an x & y block specified by tile for a given raster band
+        using GDAL.
 
         :param tile:
-            A tuple containing the start and end array indices, of the form
-            (ystart,yend,xstart,xend).
+            A tuple containing the start and end array indices, of the
+            form ((ystart, yend), (xstart,xend)).
 
         :param raster_band:
-            If reading from a single band, provide which raster band to read from.
+            If reading from a single band, provide which raster band
+            to read from.
             Default is raster band 1.
         """
 
-        ystart = int(tile[0])
-        yend = int(tile[1])
-        xstart = int(tile[2])
-        xend = int(tile[3])
+        ystart = int(tile[0][0])
+        yend = int(tile[0][1])
+        xstart = int(tile[1][0])
+        xend = int(tile[1][1])
         xsize = int(xend - xstart)
         ysize = int(yend - ystart)
 
@@ -499,20 +512,20 @@ class StackerDataset:
 
         return subset
 
-    def readTileAllRasters(self, tile):
+    def read_tile_all_rasters(self, tile):
         """
         Read an x & y block specified by tile from all raster bands
         using GDAL.
 
         :param tile:
-            A tuple containing the start and end array indices, of the form
-            (ystart,yend,xstart,xend).
+            A tuple containing the start and end array indices, of the
+            form ((ystart, yend), (xstart, xend)).
         """
 
-        ystart = int(tile[0])
-        yend = int(tile[1])
-        xstart = int(tile[2])
-        xend = int(tile[3])
+        ystart = int(tile[0][0])
+        yend = int(tile[0][1])
+        xstart = int(tile[1][0])
+        xend = int(tile[1][1])
         xsize = int(xend - xstart)
         ysize = int(yend - ystart)
 
@@ -528,7 +541,7 @@ class StackerDataset:
 
         return subset
 
-    def readRasterBand(self, raster_band=1):
+    def read_raster_band(self, raster_band=1):
         """
         Read the entire 2D block for a given raster band.
         By default the first raster band is read into memory.
@@ -537,7 +550,8 @@ class StackerDataset:
             The band index of interest. Default is the first band.
 
         :return:
-            A NumPy 2D array of the same dimensions and datatype of the band of interest.
+            A NumPy 2D array of the same dimensions and datatype of
+            the band of interest.
         """
 
         # Open the dataset.
