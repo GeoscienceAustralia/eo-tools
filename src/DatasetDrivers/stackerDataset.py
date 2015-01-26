@@ -29,11 +29,12 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-import os
+from os.path import join as pjoin
 import datetime
 import numpy
 from osgeo import gdal
 from EOtools.tiling import generate_tiles
+from EOtools.stats.temporal_stats import temporal_stats
 
 
 def pq_apply_dict():
@@ -356,9 +357,15 @@ class StackerDataset:
 
         # Initialise the tile variables
         self.tiles = [None]
-        self.nTiles = 0
+        self.n_tiles = 0
+        self.init_tiling()
+
+        # Get the no data value (assume the same value for all bands)
+        band = ds.GetRasterBand(1)
+        self.no_data = band.GetNoDataValue()
 
         # Close the dataset
+        band = None
         ds = None
 
     def get_raster_band_metadata(self, raster_band=1):
@@ -383,6 +390,7 @@ class StackerDataset:
         metadata = band.GetMetadata()
 
         # Close the dataset
+        band = None
         ds = None
 
         return metadata
@@ -399,10 +407,14 @@ class StackerDataset:
         """
 
         metadata = self.get_raster_band_metadata(raster_band)
-        dt_item = metadata['start_datetime']
-        start_dt = datetime.datetime.strptime(dt_item, "%Y-%m-%d %H:%M:%S.%f")
+        if 'start_datetime' in metadata:
+            dt_item = metadata['start_datetime']
+            start_dt = datetime.datetime.strptime(dt_item,
+                                                  "%Y-%m-%d %H:%M:%S.%f")
 
-        return start_dt
+            return start_dt
+        else:
+            return None
 
     def init_yearly_iterator(self):
         """
@@ -413,19 +425,22 @@ class StackerDataset:
         self.yearly_iterator = {}
 
         band_list = [1]  # Initialise to the first band
-        yearOne = self.get_raster_band_datetime().year
+        dt_one = self.get_raster_band_datetime()
+        if dt_one is not None:
+            year_one = dt_one.year
+            self.yearly_iterator[year_one] = band_list
 
-        self.yearly_iterator[yearOne] = band_list
-
-        for i in range(2, self.bands + 1):
-            year = self.get_raster_band_datetime(raster_band=i).year
-            if year == yearOne:
-                band_list.append(i)
-                self.yearly_iterator[yearOne] = band_list
-            else:
-                self.yearly_iterator[yearOne] = band_list
-                yearOne = year
-                band_list = [i]
+            for i in range(2, self.bands + 1):
+                year = self.get_raster_band_datetime(raster_band=i).year
+                if year == year_one:
+                    band_list.append(i)
+                    self.yearly_iterator[year_one] = band_list
+                else:
+                    self.yearly_iterator[year_one] = band_list
+                    year_one = year
+                    band_list = [i]
+        else:
+            self.yearly_iterator[0] = range(1, self.bands + 1)
 
     def get_yearly_iterator(self):
         """
@@ -434,29 +449,32 @@ class StackerDataset:
 
         return self.yearly_iterator
 
-    def init_tiling(self, xsize=100, ysize=100):
+    def init_tiling(self, xsize=None, ysize=None):
         """
         Sets the tile indices for a 2D array.
 
         :param xsize:
             Define the number of samples/columns to be included in a
             single tile.
-            Default is 100.
+            Default is the number of samples/columns.
 
         :param ysize:
             Define the number of lines/rows to be included in a single
             tile.
-            Default is 100.
+            Default is 10.
 
         :return:
             A list containing a series of tuples defining the
             individual 2D tiles/chunks to be indexed.
             Each tuple contains ((ystart, yend), (xstart, xend)).
         """
-
+        if xsize is None:
+            xsize = self.samples
+        if ysize is None:
+            ysize = 10
         self.tiles = generate_tiles(self.samples, self.lines, xtile=xsize,
                                     ytile=ysize, Generator=False)
-        self.nTiles = len(self.tiles)
+        self.n_tiles = len(self.tiles)
 
     def get_tile(self, index=0):
         """
@@ -508,6 +526,7 @@ class StackerDataset:
         band.FlushCache()
 
         # Close the dataset
+        band = None
         ds = None
 
         return subset
@@ -537,6 +556,7 @@ class StackerDataset:
         ds.FlushCache()
 
         # Close the dataset
+        band = None
         ds = None
 
         return subset
@@ -564,6 +584,118 @@ class StackerDataset:
         band.FlushCache()
 
         # Close the dataset
+        band = None
         ds = None
 
         return array
+
+    def write_band_tile(self, array, band_ds, tile=None):
+        """
+        Given a gdal.band object and optionally a tile index, write the
+        x & y tile/block to disk.
+
+        :param array:
+            A 2D NumPy array.
+
+        :param band_ds:
+            An instance of a gdal.band object suitable for writing to
+            disk.
+
+        :param tile:
+            (Optional) If array is a subset of a larger array then tile
+            is a tuple containing the subsets locations in the form
+            ((ystart, yend), (xstart, xend)).
+        """
+        # Check if we have a GDAL band object
+        if isinstance(band_ds, gdal.band):
+            if tile is None:
+                band_ds.WriteArray(array)
+                band_ds.FlushCache()
+            else:
+                xstart = int(tile[1][0])
+                ystart = int(tile[0][0])
+                band_ds.WriteArray(array, xstart, ystart)
+        else:
+            msg = 'band_ds is not of type gdal.band. band_ds is of type {}'
+            msg = msg.format(type(band_ds))
+            raise TypeError(msg)
+
+    def z_axis_stats(self, out_fname=None):
+        """
+        Compute statistics over the z-axis of the StackerDataset.
+        An image containing 14 raster bands, each describing a
+        statistical measure:
+
+            * 1. Sum
+            * 2. Valid Observations
+            * 3. Mean
+            * 4. Variance
+            * 5. Standard Deviation
+            * 6. Skewness
+            * 7. Kurtosis
+            * 8. Max
+            * 9. Min
+            * 10. Median (non-interpolated value)
+            * 11. Median Index (zero based index)
+            * 12. 1st Quantile (non-interpolated value)
+            * 13. 3rd Quantile (non-interpolated value)
+            * 14. Geometric Mean
+
+        :param out_fname:
+            A string containing the full file system path name of the
+            image containing the statistical outputs.
+
+        :return:
+            An instance of StackerDataset referencing the stats file.
+        """
+        # Check if the image tiling has been initialised
+        if self.n_tiles == 0:
+            self.init_tiling()
+
+        # Get the band names for the stats file
+        band_names = ['Sum',
+                      'Valid Observations',
+                      'Mean', 'Variance',
+                      'Standard Deviation',
+                      'Skewness',
+                      'Kurtosis',
+                      'Max',
+                      'Min',
+                      'Median (non-interpolated value)',
+                      'Median Index (zero based index)',
+                      '1st Quantile (non-interpolated value)',
+                      '3rd Quantile (non-interpolated value)',
+                      'Geometric Mean']
+
+        # out number of bands
+        out_nb = 14
+
+        # Construct the output image file to contain the result
+        if out_fname is None:
+            out_fname = pjoin(self.fname, '_z_axis_stats')
+        driver = gdal.GetDriverByName("ENVI")
+        outds = driver.Create(outfile, samples, lines, out_nb,
+                              gdal.GDT_Float32)
+
+        # Setup the geotransform and projection
+        outds.SetGeoTransform(self.geotransform())
+        outds.SetProjection(self.projection())
+
+        # Construct a list of out band objects
+        out_band = []
+        for i in range(1, out_nb + 1):
+            out_band.append(outds.GetRasterBand(i))
+            out_band[i].SetNoDataValue(numpy.nan)
+            out_band[i].SetDescription(band_names[i])
+
+        # Loop over every tile
+        for tile_n in range(self.n_tiles):
+            subset = read_tile_all_rasters(tile_n)
+            stats = temporal_stats(subset, no_data=self.no_data)
+            for i in range(out_nb):
+                write_band_tile(stats[0], out_band[i], tile=tile_n)
+
+        out_band = None
+        outds = None
+
+        return StackerDataset(out_fname)
