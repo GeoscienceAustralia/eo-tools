@@ -28,6 +28,7 @@
 # ===============================================================================
 
 from __future__ import absolute_import
+import collections
 from os.path import join as pjoin
 import datetime
 import numpy
