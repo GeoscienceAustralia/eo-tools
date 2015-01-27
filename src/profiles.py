@@ -140,6 +140,8 @@ def z_profile(stacker_dataset, xy, from_map=False, raster_bands=None):
     if ((raster_bands is None) or
             (not isinstance(raster_bands, collections.Sequence))):
         nb = range(1, stacker_dataset.bands + 1)
+    else:
+        nb = raster_bands
 
     # Read the profile
     profile = stacker_dataset.read_tile(tile, raster_bands=nb)
