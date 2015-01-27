@@ -35,6 +35,18 @@ from osgeo import gdal
 from EOtools.tiling import generate_tiles
 from EOtools.stats.temporal_stats import temporal_stats
 
+gdal_2_numpy_dtypes = {1: 'uint8',
+                       2: 'uint16',
+                       3: 'int16',
+                       4: 'uint32',
+                       5: 'int32',
+                       6: 'float32',
+                       7: 'float64',
+                       8: 'complex64',
+                       9: 'complex64',
+                       10: 'complex64',
+                       11: 'complex128'}
+
 
 class StackerDataset:
 
@@ -272,18 +284,19 @@ class StackerDataset:
 
         return tile
 
-    def read_tile(self, tile, raster_band=1):
+    def read_tile(self, tile, raster_bands=1):
         """
         Read an x & y block specified by tile for a given raster band
-        using GDAL.
+        or raster bands using GDAL.
 
         :param tile:
             A tuple containing the start and end array indices, of the
             form ((ystart, yend), (xstart,xend)).
 
-        :param raster_band:
+        :param raster_bands:
             If reading from a single band, provide which raster band
-            to read from.
+            to read from. If raster_bands is a list, then it should
+            contain the raster band numbers from which to read.
             Default is raster band 1.
         """
 
@@ -297,11 +310,21 @@ class StackerDataset:
         # Open the dataset.
         ds = gdal.Open(self.fname)
 
-        band = ds.GetRasterBand(raster_band)
-
-        # Read the block and flush the cache (potentianl GDAL memory leak)
-        subset = band.ReadAsArray(xstart, ystart, xsize, ysize)
-        band.FlushCache()
+        if isinstance(raster_bands, collections.Sequence):
+            band = ds.GetRasterBand(1)
+            dtype = gdal_2_numpy_dtypes[band.DataType]
+            n_bands = len(raster_bands)
+            subset = ds.ReadRaster(xstart, ystart, xsize, ysize,
+                                   band_list=raster_bands)
+            subset = numpy.frombuffer(subset, dtype=dtype).reshape(n_bands,
+                                                                   ysize,
+                                                                   xsize)
+            ds.FlushCache()
+        else:
+            band = ds.GetRasterBand(raster_bands)
+            # Read the block and flush the cache (potentianl GDAL memory leak)
+            subset = band.ReadAsArray(xstart, ystart, xsize, ysize)
+            band.FlushCache()
 
         # Close the dataset
         band = None
