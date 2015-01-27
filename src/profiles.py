@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import collections
 import numpy
 from scipy.ndimage import map_coordinates
 
@@ -47,9 +48,9 @@ def x_profile(stacker_dataset, xy, raster_band=1, from_map=False):
     tile = ((y, y + 1), (0, stacker_dataset.samples))
 
     # Read the profile
-    profile = stacker_dataset.read_tile(tile, raster_band=raster_band)
+    profile = stacker_dataset.read_tile(tile, raster_bands=raster_band)
 
-    return profile
+    return profile[0, :]
 
 
 def y_profile(stacker_dataset, xy, raster_band=1, from_map=False):
@@ -92,12 +93,12 @@ def y_profile(stacker_dataset, xy, raster_band=1, from_map=False):
     tile = ((0, stacker_dataset.lines), (x, x + 1))
 
     # Read the profile
-    profile = stacker_dataset.read_tile(tile, raster_band=raster_band)
+    profile = stacker_dataset.read_tile(tile, raster_bands=raster_band)
 
-    return profile
+    return profile[:, 0]
 
 
-def z_profile(stacker_dataset, xy, from_map=False):
+def z_profile(stacker_dataset, xy, from_map=False, raster_bands=None):
     """
     Get the data associated with the z-axis of an image.
     The z-axis for a 3D image is also known as a spectral profile for
@@ -135,10 +136,14 @@ def z_profile(stacker_dataset, xy, from_map=False):
     # Create a tile to define the chunk we wish to read
     tile = ((y, y + 1), (x, x + 1))
 
-    # Read the profile
-    profile = stacker_dataset.read_tile_all_rasters(tile)
+    if ((raster_bands is None) or
+       (not isinstance(raster_bands, collections.Sequence))):
+        nb = range(1, stacker_dataset.bands + 1)
 
-    return profile
+    # Read the profile
+    profile = stacker_dataset.read_tile(tile, raster_bands=nb)
+
+    return profile[:, 0, 0]
 
 
 def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
