@@ -53,8 +53,10 @@ def convert_coordinates(geotransform, xy, to_map=True, centre=False):
                 points.append((x, y))
         else:
             invgt = gdal.InvGeoTransform(geotransform)[1]
-            x = int(xy[0] * invgt[1] + invgt[0])
-            y = int(invgt[3] - xy[1] * abs(invgt[5]))
+            for point in xy:
+                x = int(point[0] * invgt[1] + invgt[0])
+                y = int(invgt[3] - point[1] * abs(invgt[5]))
+                points.append((x, y))
         return points
     else:
         if to_map:
