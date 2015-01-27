@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 import numpy
+from scipy.ndimage import map_coordinates
 
 from EOtools.coordinates import convert_coordinates
+from EOtools.DatasetDrivers.stackerDataset import StackerDataset
 
 
 def x_profile(stacker_dataset, xy, raster_band=1, from_map=False):
     """
-    Get the data associated with a x-axis and optionally plot it.
+    Get the data associated with the x-axis of an image.
 
     :param stacker_dataset:
         An instance of a StackerDataset.
@@ -52,7 +54,7 @@ def x_profile(stacker_dataset, xy, raster_band=1, from_map=False):
 
 def y_profile(stacker_dataset, xy, raster_band=1, from_map=False):
     """
-    Get the data associated with a y-axis and optionally plot it.
+    Get the data associated with a y-axis of an image.
 
     :param stacker_dataset:
         An instance of a StackerDataset.
@@ -97,7 +99,7 @@ def y_profile(stacker_dataset, xy, raster_band=1, from_map=False):
 
 def z_profile(stacker_dataset, xy, from_map=False):
     """
-    Get the data associated with a z-axis and optionally plot it.
+    Get the data associated with the z-axis of an image.
     The z-axis for a 3D image is also known as a spectral profile for
     spectrally stacked data or a temporal profile for temporally
     stacked data.
@@ -142,8 +144,9 @@ def z_profile(stacker_dataset, xy, from_map=False):
 def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
                       cubic=False, from_map=False):
     """
-    Get the data associated with an arbitrary set of points and
-    optionally plot it.
+    Get the data associated with an arbitrary set of points that
+    define an arbitrary profile/transect, and the pixel locations
+    associated with the transect.
 
     :param stacker_dataset:
         An instance of a StackerDataset.
@@ -161,7 +164,8 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
 
     :return:
         A 1D NumPy array of lenght determined by the distance between
-        the xy_points.
+        the xy_points, and a tuple (y_index, x_index) containing the
+        pixel locations of the transect.
     """
     if not isinstance(stacker_dataset, StackerDataset):
         msg = ('stacker_dataset should be an instance of StackerDataset but '
@@ -169,29 +173,33 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
         msg = msg.format(type(stacker_dataset))
         raise TypeError(msg)
 
-    n_points = len(img_xy)
+    n_points = len(xy_points)
     if n_points < 2:
         msg = "Minimum number of points is 2, received {}".format(n_points)
         raise ValueError(msg)
 
     # Convert to image co-ordinates if needed
     if from_map:
-        img_xy = convert_coordinates(stacker_dataset.geotransform, xy,
+        img_xy = convert_coordinates(stacker_dataset.geotransform, xy_points,
                                      to_map=False)
     else:
-        img_xy = xy
+        img_xy = xy_points
 
     # Read the image band
     img = stacker_dataset.read_raster_band(raster_band=raster_band)
 
     profile = numpy.array([], dtype=img.dtype)
+    x_idx = numpy.array([], dtype='int')
+    y_idx = numpy.array([], dtype='int')
     for i in range(1, n_points):
-        x0, y0 = points[i-1]
-        x1, y1 = points[i]
+        x0, y0 = img_xy[i-1]
+        x1, y1 = img_xy[i]
 
         n_pixels = max(abs(x1 - x0 + 1), abs(y1 - y0 + 1))
         x = numpy.linspace(x0, x1, n_pixels)
         y = numpy.linspace(y0, y1, n_pixels)
+        x_idx = numpy.append(x_idx, x)
+        y_idx = numpy.append(y_idx, y)
 
         if cubic:
             transect = map_coordinates(img, (y, x))
@@ -200,4 +208,7 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
             transect = img[y.astype('int'), x.astype('int')]
             profile = numpy.append(profile, transect)
 
-    return profile
+    x_idx = x_idx.astype('int')
+    y_idx = y_idx.astype('int')
+
+    return (profile, (y_idx, x_idx))
