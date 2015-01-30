@@ -199,9 +199,16 @@ class StackerDataset:
         metadata = self.get_raster_band_metadata(raster_band)
         if 'start_datetime' in metadata:
             dt_item  = metadata['start_datetime']
-            start_dt = datetime.datetime.strptime(dt_item,
-                                                  "%Y-%m-%d %H:%M:%S.%f")
-
+            try:
+                str_fmt = "%Y-%m-%d %H:%M:%S.%f"
+                start_dt = datetime.datetime.strptime(dt_item, str_fmt)
+            except ValueError:
+                try:
+                    str_fmt = "%Y-%m-%d %H:%M:%S"
+                    start_dt = datetime.datetime.strptime(dt_item, str_fmt)
+                except ValueError:
+                    raise
+                    start_dt = None
             return start_dt
         else:
             return None
