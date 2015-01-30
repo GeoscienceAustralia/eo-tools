@@ -172,8 +172,18 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
 
     :return:
         A 1D NumPy array of lenght determined by the distance between
-        the xy_points, and a tuple (y_index, x_index) containing the
-        pixel locations of the transect.
+        the xy_points; A tuple (y_index, x_index) containing the
+        pixel locations of the transect; and a tuple containing a list
+        of start and end co-ordinates for both x and y fields.
+        The form of the start and end locations is:
+
+            ([(xstart_1, xend_1),...,(xstart_n-1, xend_n-1)],
+             [(ystart_1, yend_1),...,(ystart_n-1, yend_n-1)]).
+
+        This form can be directly used in a call to plot() as follows:
+
+            z_prf, idx, xy_start_end = arbitrary_profile()
+            plot(xy_start_end[0], xy_start_end[1], 'r-')
     """
     if not isinstance(stacker_dataset, StackerDataset):
         msg = ('stacker_dataset should be an instance of StackerDataset but '
@@ -199,9 +209,13 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
     profile = numpy.array([], dtype=img.dtype)
     x_idx = numpy.array([], dtype='int')
     y_idx = numpy.array([], dtype='int')
+    x_start_end = []
+    y_start_end = []
     for i in range(1, n_points):
         x0, y0 = img_xy[i - 1]
         x1, y1 = img_xy[i]
+        x_start_end.append((x0, x1))
+        y_start_end.append((y0, y1))
 
         n_pixels = max(abs(x1 - x0 + 1), abs(y1 - y0 + 1))
         x = numpy.linspace(x0, x1, n_pixels)
@@ -219,4 +233,4 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
     x_idx = x_idx.astype('int')
     y_idx = y_idx.astype('int')
 
-    return (profile, (y_idx, x_idx))
+    return (profile, (y_idx, x_idx), (x_start_end, y_start_end))
