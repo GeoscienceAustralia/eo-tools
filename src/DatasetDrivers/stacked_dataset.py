@@ -90,7 +90,7 @@ def write_band_tile(array, band_ds, no_data=None, tile=None):
         raise TypeError(msg)
 
 
-class StackerDataset:
+class StackedDataset:
 
     """
     A class designed for dealing with datasets returned by stacker.py.
@@ -104,7 +104,7 @@ class StackerDataset:
     Example:
 
         >>> fname = 'FC_144_-035_BS.vrt'
-        >>> ds = StackerDataset(fname)
+        >>> ds = StackedDataset(fname)
         >>> # Get the number of bands associated with the dataset
         >>> ds.bands
         22
@@ -441,7 +441,7 @@ class StackerDataset:
 
     def z_axis_stats(self, out_fname=None, raster_bands=None):
         """
-        Compute statistics over the z-axis of the StackerDataset.
+        Compute statistics over the z-axis of the StackedDataset.
         An image containing 14 raster bands, each describing a
         statistical measure:
 
@@ -471,7 +471,7 @@ class StackerDataset:
             sequential or non-sequential.
 
         :return:
-            An instance of StackerDataset referencing the stats file.
+            An instance of StackedDataset referencing the stats file.
         """
         # Check if the image tiling has been initialised
         if self.n_tiles == 0:
@@ -533,4 +533,4 @@ class StackerDataset:
         out_bands = None
         outds = None
 
-        return StackerDataset(out_fname)
+        return StackedDataset(out_fname)

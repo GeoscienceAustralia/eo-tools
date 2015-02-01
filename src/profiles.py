@@ -6,15 +6,15 @@ import numpy
 from scipy.ndimage import map_coordinates
 
 from EOtools.coordinates import convert_coordinates
-from EOtools.DatasetDrivers.stackerDataset import StackerDataset
+from EOtools.DatasetDrivers.stacked_dataset import StackedDataset
 
 
-def x_profile(stacker_dataset, xy, raster_band=1, from_map=False):
+def x_profile(stacked_dataset, xy, raster_band=1, from_map=False):
     """
     Get the data associated with the x-axis of an image.
 
-    :param stacker_dataset:
-        An instance of a StackerDataset.
+    :param stacked_dataset:
+        An instance of a StackedDataset.
 
     :param xy:
         An tuple containing an (x, y) co-ordinate pair from which to
@@ -30,36 +30,36 @@ def x_profile(stacker_dataset, xy, raster_band=1, from_map=False):
 
     :return:
         A 1D NumPy array of length determined by the number of columns
-        in the stacker_dataset.
+        in the stacked_dataset.
     """
-    if not isinstance(stacker_dataset, StackerDataset):
-        msg = ('stacker_dataset should be an instance of StackerDataset but '
+    if not isinstance(stacked_dataset, StackedDataset):
+        msg = ('stacked_dataset should be an instance of StackedDataset but '
                'is of type {}')
-        msg = msg.format(type(stacker_dataset))
+        msg = msg.format(type(stacked_dataset))
         raise TypeError(msg)
 
     # Convert to image co-ordinates if needed
     if from_map:
-        x, y = convert_coordinates(stacker_dataset.geotransform, xy,
+        x, y = convert_coordinates(stacked_dataset.geotransform, xy,
                                    to_map=False)
     else:
         x, y = xy
 
     # Create a tile to define the chunk we wish to read
-    tile = ((y, y + 1), (0, stacker_dataset.samples))
+    tile = ((y, y + 1), (0, stacked_dataset.samples))
 
     # Read the profile
-    profile = stacker_dataset.read_tile(tile, raster_bands=raster_band)
+    profile = stacked_dataset.read_tile(tile, raster_bands=raster_band)
 
     return profile[0, :]
 
 
-def y_profile(stacker_dataset, xy, raster_band=1, from_map=False):
+def y_profile(stacked_dataset, xy, raster_band=1, from_map=False):
     """
     Get the data associated with a y-axis of an image.
 
-    :param stacker_dataset:
-        An instance of a StackerDataset.
+    :param stacked_dataset:
+        An instance of a StackedDataset.
 
     :param xy:
         An tuple containing an (x, y) co-ordinate pair from which to
@@ -75,39 +75,39 @@ def y_profile(stacker_dataset, xy, raster_band=1, from_map=False):
 
     :return:
         A 1D NumPy array of length determined by the number of rows in
-        the stacker_dataset.
+        the stacked_dataset.
     """
-    if not isinstance(stacker_dataset, StackerDataset):
-        msg = ('stacker_dataset should be an instance of StackerDataset but '
+    if not isinstance(stacked_dataset, StackedDataset):
+        msg = ('stacked_dataset should be an instance of StackedDataset but '
                'is of type {}')
-        msg = msg.format(type(stacker_dataset))
+        msg = msg.format(type(stacked_dataset))
         raise TypeError(msg)
 
     # Convert to image co-ordinates if needed
     if from_map:
-        x, y = convert_coordinates(stacker_dataset.geotransform, xy,
+        x, y = convert_coordinates(stacked_dataset.geotransform, xy,
                                    to_map=False)
     else:
         x, y = xy
 
     # Create a tile to define the chunk we wish to read
-    tile = ((0, stacker_dataset.lines), (x, x + 1))
+    tile = ((0, stacked_dataset.lines), (x, x + 1))
 
     # Read the profile
-    profile = stacker_dataset.read_tile(tile, raster_bands=raster_band)
+    profile = stacked_dataset.read_tile(tile, raster_bands=raster_band)
 
     return profile[:, 0]
 
 
-def z_profile(stacker_dataset, xy, from_map=False, raster_bands=None):
+def z_profile(stacked_dataset, xy, from_map=False, raster_bands=None):
     """
     Get the data associated with the z-axis of an image.
     The z-axis for a 3D image is also known as a spectral profile for
     spectrally stacked data or a temporal profile for temporally
     stacked data.
 
-    :param stacker_dataset:
-        An instance of a StackerDataset.
+    :param stacked_dataset:
+        An instance of a StackedDataset.
 
     :param xy:
         The xy co-ordinate from which to get the z profile.
@@ -119,17 +119,17 @@ def z_profile(stacker_dataset, xy, from_map=False, raster_bands=None):
 
     :return:
         A 1D NumPy array of length determined by the number of raster
-        bands in the stacker_dataset.
+        bands in the stacked_dataset.
     """
-    if not isinstance(stacker_dataset, StackerDataset):
-        msg = ('stacker_dataset should be an instance of StackerDataset but '
+    if not isinstance(stacked_dataset, StackedDataset):
+        msg = ('stacked_dataset should be an instance of StackedDataset but '
                'is of type {}')
-        msg = msg.format(type(stacker_dataset))
+        msg = msg.format(type(stacked_dataset))
         raise TypeError(msg)
 
     # Convert to image co-ordinates if needed
     if from_map:
-        x, y = convert_coordinates(stacker_dataset.geotransform, xy,
+        x, y = convert_coordinates(stacked_dataset.geotransform, xy,
                                    to_map=False)
     else:
         x, y = xy
@@ -139,25 +139,25 @@ def z_profile(stacker_dataset, xy, from_map=False, raster_bands=None):
 
     if ((raster_bands is None) or
             (not isinstance(raster_bands, collections.Sequence))):
-        nb = range(1, stacker_dataset.bands + 1)
+        nb = range(1, stacked_dataset.bands + 1)
     else:
         nb = raster_bands
 
     # Read the profile
-    profile = stacker_dataset.read_tile(tile, raster_bands=nb)
+    profile = stacked_dataset.read_tile(tile, raster_bands=nb)
 
     return profile[:, 0, 0]
 
 
-def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
+def arbitrary_profile(stacked_dataset, xy_points, raster_band=1,
                       cubic=False, from_map=False):
     """
     Get the data associated with an arbitrary set of points that
     define an arbitrary profile/transect, and the pixel locations
     associated with the transect.
 
-    :param stacker_dataset:
-        An instance of a StackerDataset.
+    :param stacked_dataset:
+        An instance of a StackedDataset.
 
     :param xy_points:
         A list of (x, y) co-ordinate paris eg [(x, y), (x, y), (x, y)].
@@ -185,10 +185,10 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
             z_prf, idx, xy_start_end = arbitrary_profile()
             plot(xy_start_end[0], xy_start_end[1], 'r-')
     """
-    if not isinstance(stacker_dataset, StackerDataset):
-        msg = ('stacker_dataset should be an instance of StackerDataset but '
+    if not isinstance(stacked_dataset, StackedDataset):
+        msg = ('stacked_dataset should be an instance of StackedDataset but '
                'is of type {}')
-        msg = msg.format(type(stacker_dataset))
+        msg = msg.format(type(stacked_dataset))
         raise TypeError(msg)
 
     n_points = len(xy_points)
@@ -198,13 +198,13 @@ def arbitrary_profile(stacker_dataset, xy_points, raster_band=1,
 
     # Convert to image co-ordinates if needed
     if from_map:
-        img_xy = convert_coordinates(stacker_dataset.geotransform, xy_points,
+        img_xy = convert_coordinates(stacked_dataset.geotransform, xy_points,
                                      to_map=False)
     else:
         img_xy = xy_points
 
     # Read the image band
-    img = stacker_dataset.read_raster_band(raster_band=raster_band)
+    img = stacked_dataset.read_raster_band(raster_band=raster_band)
 
     profile = numpy.array([], dtype=img.dtype)
     x_idx = numpy.array([], dtype='int')
