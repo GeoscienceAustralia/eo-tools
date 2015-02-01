@@ -47,6 +47,48 @@ gdal_2_numpy_dtypes = {1: 'uint8',
                        10: 'complex64',
                        11: 'complex128'}
 
+
+def write_band_tile(array, band_ds, no_data=None, tile=None):
+    """
+    Given a gdal.band object and optionally a tile index, write the
+    x & y tile/block to disk.
+
+    :param array:
+        A 2D NumPy array.
+
+    :param band_ds:
+        An instance of a gdal.band object suitable for writing to
+        disk.
+
+    :param no_data:
+        A float64 value indicating the no data value. If unset, then
+        no_data is ignored.
+
+    :param tile:
+        (Optional) If array is a subset of a larger array then tile
+        is a tuple containing the subsets locations in the form
+        ((ystart, yend), (xstart, xend)).
+    """
+    # Check if we have a GDAL band object
+    if isinstance(band_ds, gdal.band):
+        if tile is None:
+            if no_data is not None:
+                band_ds.SetNoDataValue(no_data)
+            band_ds.WriteArray(array)
+            band_ds.FlushCache()
+        else:
+            xstart = int(tile[1][0])
+            ystart = int(tile[0][0])
+            if no_data is not None:
+                band_ds.SetNoDataValue(no_data)
+            band_ds.WriteArray(array, xstart, ystart)
+            band_ds.FlushCache()
+    else:
+        msg = 'band_ds is not of type gdal.band. band_ds is of type {}'
+        msg = msg.format(type(band_ds))
+        raise TypeError(msg)
+
+
 class StackerDataset:
     """
     A class designed for dealing with datasets returned by stacker.py.
@@ -405,39 +447,7 @@ class StackerDataset:
         return array
 
 
-    def write_band_tile(self, array, band_ds, tile=None):
-        """
-        Given a gdal.band object and optionally a tile index, write the
-        x & y tile/block to disk.
-
-        :param array:
-            A 2D NumPy array.
-
-        :param band_ds:
-            An instance of a gdal.band object suitable for writing to
-            disk.
-
-        :param tile:
-            (Optional) If array is a subset of a larger array then tile
-            is a tuple containing the subsets locations in the form
-            ((ystart, yend), (xstart, xend)).
-        """
-        # Check if we have a GDAL band object
-        if isinstance(band_ds, gdal.band):
-            if tile is None:
-                band_ds.WriteArray(array)
-                band_ds.FlushCache()
-            else:
-                xstart = int(tile[1][0])
-                ystart = int(tile[0][0])
-                band_ds.WriteArray(array, xstart, ystart)
-        else:
-            msg = 'band_ds is not of type gdal.band. band_ds is of type {}'
-            msg = msg.format(type(band_ds))
-            raise TypeError(msg)
-
-
-    def z_axis_stats(self, out_fname=None):
+    def z_axis_stats(self, out_fname=None, raster_bands=None):
         """
         Compute statistics over the z-axis of the StackerDataset.
         An image containing 14 raster bands, each describing a
@@ -461,6 +471,12 @@ class StackerDataset:
         :param out_fname:
             A string containing the full file system path name of the
             image containing the statistical outputs.
+
+        :param raster_bands:
+            If raster_bands is None (Default) then statistics will be
+            calculated across all bands. Otherwise raster_bands can be
+            a list containing the raster bands of interest. This can be
+            sequential or non-sequential.
 
         :return:
             An instance of StackerDataset referencing the stats file.
@@ -499,20 +515,30 @@ class StackerDataset:
         outds.SetProjection(self.projection())
 
         # Construct a list of out band objects
-        out_band = []
+        out_bands = []
         for i in range(1, out_nb + 1):
-            out_band.append(outds.GetRasterBand(i))
-            out_band[i].SetNoDataValue(numpy.nan)
-            out_band[i].SetDescription(band_names[i])
+            out_bands.append(outds.GetRasterBand(i))
+            out_bands[i].SetNoDataValue(numpy.nan)
+            out_bands[i].SetDescription(band_names[i])
+
+        # If we have None, set to read all bands
+        if raster_bands is None:
+            raster_bands = range(1, self.bands + 1)
+
+        # Check that we have an iterable
+        if not isinstance(raster_bands, collections.Sequence):
+            msg = 'raster_bands is not a list but a {}'
+            msg = msg.format(type(raster_bands))
+            raise TypeError(msg)
 
         # Loop over every tile
         for tile_n in range(self.n_tiles):    
-            subset = read_tile_all_rasters(tile_n)
+            subset = read_tile(tile_n, raster_bands)
             stats = temporal_stats(subset, no_data=self.no_data)
             for i in range(out_nb):
-                write_band_tile(stats[0], out_band[i], tile=tile_n)
+                write_band_tile(stats[i], out_bands[i], tile=tile_n)
 
-        out_band = None
+        out_bands = None
         outds = None
 
         return StackerDataset(out_fname)
