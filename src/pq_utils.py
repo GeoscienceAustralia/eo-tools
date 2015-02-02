@@ -132,7 +132,7 @@ def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
         invert = pq_apply_invert_dict()
 
     # Check for correct dimensionality
-    if (array.ndim != 2) or (array.ndim != 3):
+    if not ((array.ndim != 2) or (array.ndim != 3)):
         msg = 'Error. Array dimensions must be 2D or 3D, not {}'
         msg = msg.format(array.ndim)
         raise Exception(msg)
