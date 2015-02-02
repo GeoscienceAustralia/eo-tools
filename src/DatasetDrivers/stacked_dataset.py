@@ -516,8 +516,8 @@ class StackedDataset:
 
         # Construct a list of out band objects
         out_bands = []
-        for i in range(1, out_nb + 1):
-            out_bands.append(outds.GetRasterBand(i))
+        for i in range(out_nb):
+            out_bands.append(outds.GetRasterBand(i + 1))
             out_bands[i].SetNoDataValue(numpy.nan)
             out_bands[i].SetDescription(band_names[i])
 
@@ -532,11 +532,12 @@ class StackedDataset:
             raise TypeError(msg)
 
         # Loop over every tile
-        for tile_n in range(self.n_tiles):    
-            subset = read_tile(tile_n, raster_bands)
+        for tile_n in range(self.n_tiles):
+            tile = self.get_tile(tile_n)
+            subset = read_tile(tile, raster_bands)
             stats = temporal_stats(subset, no_data=self.no_data)
             for i in range(out_nb):
-                write_band_tile(stats[i], out_bands[i], tile=tile_n)
+                write_band_tile(stats[i], out_bands[i], tile=tile)
 
         out_bands = None
         outds = None
