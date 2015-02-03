@@ -71,7 +71,7 @@ def write_band_tile(array, band_ds, no_data=None, tile=None):
         ((ystart, yend), (xstart, xend)).
     """
     # Check if we have a GDAL band object
-    if isinstance(band_ds, gdal.band):
+    if isinstance(band_ds, gdal.Band):
         if tile is None:
             if no_data is not None:
                 band_ds.SetNoDataValue(no_data)
@@ -499,7 +499,7 @@ class StackedDataset:
         if out_fname is None:
             out_fname = pjoin(self.fname, '_z_axis_stats')
         driver = gdal.GetDriverByName("ENVI")
-        outds = driver.Create(outfile, samples, lines, out_nb,
+        outds = driver.Create(out_fname, samples, lines, out_nb,
                               gdal.GDT_Float32)
 
         # Setup the geotransform and projection
