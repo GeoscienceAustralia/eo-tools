@@ -454,8 +454,8 @@ class StackedDataset:
         statistical measure:
 
             * 1. Sum                                                                     
-            * 2. Valid Observations                                                      
-            * 3. Mean                                                                    
+            * 2. Mean                                                                    
+            * 3. Valid Observations                                                      
             * 4. Variance                                                                
             * 5. Standard Deviation                                                      
             * 6. Skewness                                                                
@@ -487,8 +487,9 @@ class StackedDataset:
 
         # Get the band names for the stats file
         band_names = ['Sum',
+                      'Mean',
                       'Valid Observations',
-                      'Mean', 'Variance',
+                      'Variance',
                       'Standard Deviation',
                       'Skewness',
                       'Kurtosis',
@@ -507,12 +508,12 @@ class StackedDataset:
         if out_fname is None:
             out_fname = pjoin(self.fname, '_z_axis_stats')
         driver = gdal.GetDriverByName("ENVI")
-        outds = driver.Create(out_fname, samples, lines, out_nb,
+        outds = driver.Create(out_fname, self.samples, self.lines, out_nb,
                               gdal.GDT_Float32)
 
         # Setup the geotransform and projection
-        outds.SetGeoTransform(self.geotransform()) 
-        outds.SetProjection(self.projection())
+        outds.SetGeoTransform(self.geotransform) 
+        outds.SetProjection(self.projection)
 
         # Construct a list of out band objects
         out_bands = []
@@ -534,7 +535,7 @@ class StackedDataset:
         # Loop over every tile
         for tile_n in range(self.n_tiles):
             tile = self.get_tile(tile_n)
-            subset = read_tile(tile, raster_bands)
+            subset = self.read_tile(tile, raster_bands)
             stats = temporal_stats(subset, no_data=self.no_data)
             for i in range(out_nb):
                 write_band_tile(stats[i], out_bands[i], tile=tile)
