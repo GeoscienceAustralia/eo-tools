@@ -60,7 +60,7 @@ def pq_apply_invert_dict():
 
 
 def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
-                     combine=False):
+                     combine=False, quiet=True):
     """
     Extracts pixel quality flags from the pixel quality bit array.
 
@@ -91,6 +91,10 @@ def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
         A boolean keyword as to whether or not the extracted PQ masks
         should be combined into a single mask. If input array is 3D,
         then combine is set to True.
+
+    :param quiet:
+        If set to True (default), then the interpreter won't print which
+        flags are being skipped. Useful for debugging purposes.
 
     :return:
         An n-D NumPy array of type bool where n is given by the number
@@ -179,7 +183,8 @@ def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
             bits.append(bit_shift[k]['bit'])
             invs.append(invert[k])
         else:
-            print("Skipping PQ flag {}".format(k))
+            if not quiet:
+                print("Skipping PQ flag {}".format(k))
 
     # sort via bits
     container = sorted(zip(bits, values, invs))
