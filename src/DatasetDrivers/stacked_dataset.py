@@ -27,232 +27,69 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #===============================================================================
 
-import os
+import collections
+from os.path import join as pjoin
 import datetime
 import numpy
 from osgeo import gdal
 from EOtools.tiling import generate_tiles
+from EOtools.stats.temporal_stats import temporal_stats
 
-def pq_apply_dict():
+gdal_2_numpy_dtypes = {1: 'uint8',
+                       2: 'uint16',
+                       3: 'int16',
+                       4: 'uint32',
+                       5: 'int32',
+                       6: 'float32',
+                       7: 'float64',
+                       8: 'complex64',
+                       9: 'complex64',
+                       10: 'complex64',
+                       11: 'complex128'}
+
+
+def write_band_tile(array, band_ds, no_data=None, tile=None):
     """
-    Return a dictionary containing boolean values on whether or not
-    to apply a PQ quality flag.
-    """
-
-    d = {'Saturation_1'  : True,
-         'Saturation_2'  : True,
-         'Saturation_3'  : True,
-         'Saturation_4'  : True,
-         'Saturation_5'  : True,
-         'Saturation_61' : True,
-         'Saturation_62' : True,
-         'Saturation_7'  : True,
-         'Contiguity'    : True,
-         'Land_Sea'      : True,
-         'ACCA'          : True,
-         'Fmask'         : True,
-         'CloudShadow_1' : True,
-         'CloudShadow_2' : True,
-         'Empty_1'       : False,
-         'Empty_2'       : False
-        }
-
-    return d
-
-def pq_apply_invert_dict():
-    """
-    Return a dictionary containing boolean values on whether or not
-    to apply a PQ quality flag inversely.
-    """
-
-    d = {'Saturation_1'  : False,
-         'Saturation_2'  : False,
-         'Saturation_3'  : False,
-         'Saturation_4'  : False,
-         'Saturation_5'  : False,
-         'Saturation_61' : False,
-         'Saturation_62' : False,
-         'Saturation_7'  : False,
-         'Contiguity'    : False,
-         'Land_Sea'      : False,
-         'ACCA'          : False,
-         'Fmask'         : False,
-         'CloudShadow_1' : False,
-         'CloudShadow_2' : False,
-         'Empty_1'       : False,
-         'Empty_2'       : False
-        }
-
-    return d
-
-def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
-                     combine=False):
-    """
-    Extracts pixel quality flags from the pixel quality bit array.
+    Given a gdal.band object and optionally a tile index, write the
+    x & y tile/block to disk.
 
     :param array:
-        A NumPy 2D array containing the PQ bit array.
+        A 2D NumPy array.
 
-    :param flags:
-        A dictionary containing each PQ flag and a boolean value
-        determining if that flag is to be extracted.
-        If None; then this routine will get the default PQ flags dictionary
-        which is True for all flags.
+    :param band_ds:
+        An instance of a gdal.band object suitable for writing to
+        disk.
 
-    :param invert:
-        A dictionary containing each PQ flag and a boolean value
-        determining if that flag is to be inverted once extracted.
-        Useful if you want to investigate that pheonomena.
-        If None; then this routine will get the default invert flags dictionary
-        which is False for all flags.
+    :param no_data:
+        A float64 value indicating the no data value. If unset, then
+        no_data is ignored.
 
-    :param check_zero:
-        A boolean keyword as to whether or not the PQ bit array should
-        be checked for instances of zero prior to bit extraction.
-        Ideally this should be set when investigating specific
-        pheonomena. Default is False.
-
-    :param combine:
-        A boolean keyword as to whether or not the extracted PQ masks
-        should be combined into a single mask.
-
-    :return:
-        An n-D NumPy array of type bool where n is given by the number
-        of flags present in the flags dictionary. If combine is set
-        then a single 2D NumPy array of type bool is returned.
-
-    :notes:
-        If either the flags or invert dictionaries contain incorrect
-        keys, then they will be reported and ignored during bit
-        extraction.
-
-    Example:
-
-        >>> # This will automatically get the default PQ and inversion flags
-        >>> # and combine the result into a single boolean array
-        >>> pq = stackerDataset.extract_pq_flags(img, check_zero=True, combine=True)
-        >>> # For this example, we'll only extract the cloud flags, invert them
-        >>> # so we only have the cloud data, and combine them into a single
-        >>> # boolean array
-        >>> d = stackerDataset.pq_apply_invert_dict()
-        >>> # The PQapplyInvertDict() returns False for every flag
-        >>> d['ACCA'] = True
-        >>> d['Fmask'] = True
-        >>> pq = stackerDataset.extract_pq_flags(img, check_zero=True, combine=True, invert=d, flags=d)
+    :param tile:
+        (Optional) If array is a subset of a larger array then tile
+        is a tuple containing the subsets locations in the form
+        ((ystart, yend), (xstart, xend)).
     """
-
-    # Check for existance of flags 
-    if flags is None:
-        flags = pq_apply_dict()
-    elif type(flags) != dict:
-        print "flags must be of type dict. Retrieving default PQ flags dict."
-        flags = pq_apply_dict()
-
-    # Check for existance of invert
-    if invert is None:
-        invert = pq_apply_invert_dict()
-    elif type(invert) != dict:
-        print "invert must be of type dict. Retrieving default PQ invert dict."
-        invert = pq_apply_invert_dict()
-
-    # Check for correct dimensionality
-    if array.ndim != 2:
-        msg = 'Error. Array dimensions must be 2D, not {}'.format(array.ndim)
-        raise Exception(msg)
-
-    # image dimensions
-    dims = array.shape
-    samples = dims[1]
-    lines   = dims[0]
-
-    # Initialise the PQ flag bit positions
-    bit_shift = {'Saturation_1'  : {'value' : 1,     'bit' : 0},
-                 'Saturation_2'  : {'value' : 2,     'bit' : 1},
-                 'Saturation_3'  : {'value' : 4,     'bit' : 2},
-                 'Saturation_4'  : {'value' : 8,     'bit' : 3},
-                 'Saturation_5'  : {'value' : 16,    'bit' : 4},
-                 'Saturation_61' : {'value' : 32,    'bit' : 5},
-                 'Saturation_62' : {'value' : 64,    'bit' : 6},
-                 'Saturation_7'  : {'value' : 128,   'bit' : 7},
-                 'Contiguity'    : {'value' : 256,   'bit' : 8},
-                 'Land_Sea'      : {'value' : 512,   'bit' : 9},
-                 'ACCA'          : {'value' : 1024,  'bit' : 10},
-                 'Fmask'         : {'value' : 2048,  'bit' : 11},
-                 'CloudShadow_1' : {'value' : 4096,  'bit' : 12},
-                 'CloudShadow_2' : {'value' : 8192,  'bit' : 13},
-                 'Empty_1'       : {'value' : 16384, 'bit' : 14},
-                 'Empty_2'       : {'value' : 32768, 'bit' : 15}
-                }
-
-    bits   = []
-    values = []
-    invs   = []
-    # Check for correct keys in dicts
-    for k, v in flags.items():
-        if (k in bit_shift) and (k in invert) and v:
-           values.append(bit_shift[k]['value'])
-           bits.append(bit_shift[k]['bit'])
-           invs.append(invert[k])
+    # Check if we have a GDAL band object
+    if isinstance(band_ds, gdal.Band):
+        if tile is None:
+            if no_data is not None:
+                band_ds.SetNoDataValue(no_data)
+            band_ds.WriteArray(array)
+            band_ds.FlushCache()
         else:
-            print "Skipping PQ flag {}".format(k)
-
-    # sort via bits
-    container = sorted(zip(bits, values, invs))
-
-    nflags = len(container)
-
-    # Extract PQ flags
-    if check_zero:
-        zero = array == 0
-        if combine:
-            # When combining we need to turn pixels to False, therefore
-            # we initialise as True:
-            #     True & True = True
-            #     True & False =  False
-            #     False & True = False
-            #     False & False = False
-            mask = numpy.ones(dims, dtype='bool')
-            for b, v, i in container:
-                if i:
-                    mask &= ~((array & v) >> b).astype('bool')
-                else:
-                    mask &= (array & v) >> b
-            # Account for zero during bit extraction
-            mask[zero] = True
-        else:
-            mask = numpy.zeros((nflags, lines, samples), dtype='bool')
-            for idx, [b,v,i] in enumerate(container):
-                if i:
-                    mask[idx] = ~((array & v) >> b).astype('bool')
-                else:
-                    mask[idx] = (array & v) >> b
-            mask[:,zero] = True
+            xstart = int(tile[1][0])
+            ystart = int(tile[0][0])
+            if no_data is not None:
+                band_ds.SetNoDataValue(no_data)
+            band_ds.WriteArray(array, xstart, ystart)
+            band_ds.FlushCache()
     else:
-        if combine:
-            # When combining we need to turn pixels to False, therefore
-            # we initialise as True:
-            #     True & True = True
-            #     True & False =  False
-            #     False & True = False
-            #     False & False = False
-            mask = numpy.ones(dims, dtype='bool')
-            for b, v, i in container:
-                if i:
-                    mask &= ~((array & v) >> b).astype('bool')
-                else:
-                    mask &= (array & v) >> b
-        else:
-            mask = numpy.zeros((nflags, lines, samples), dtype='bool')
-            for idx, [b,v,i] in enumerate(container):
-                if i:
-                    mask[idx] = ~((array & v) >> b).astype('bool')
-                else:
-                    mask[idx] = (array & v) >> b
-
-    return mask
+        msg = 'band_ds is not of type gdal.band. band_ds is of type {}'
+        msg = msg.format(type(band_ds))
+        raise TypeError(msg)
 
 
-class StackerDataset:
+class StackedDataset:
     """
     A class designed for dealing with datasets returned by stacker.py.
     The reason for only handling data returned by stacker.py are due to 
@@ -265,7 +102,7 @@ class StackerDataset:
     Example:
 
         >>> fname = 'FC_144_-035_BS.vrt'
-        >>> ds = StackerDataset(fname)
+        >>> ds = StackedDataset(fname)
         >>> # Get the number of bands associated with the dataset
         >>> ds.bands
         22
@@ -350,9 +187,15 @@ class StackerDataset:
 
         # Initialise the tile variables
         self.tiles  = [None]
-        self.nTiles = 0
+        self.n_tiles = 0
+        self.init_tiling()
+
+        # Get the no data value (assume the same value for all bands)
+        band = ds.GetRasterBand(1)
+        self.no_data = band.GetNoDataValue()
 
         # Close the dataset
+        band = None
         ds = None
 
 
@@ -378,6 +221,7 @@ class StackerDataset:
         metadata = band.GetMetadata()
 
         # Close the dataset
+        band = None
         ds = None
 
         return metadata
@@ -395,10 +239,21 @@ class StackerDataset:
         """
 
         metadata = self.get_raster_band_metadata(raster_band)
-        dt_item  = metadata['start_datetime']
-        start_dt = datetime.datetime.strptime(dt_item, "%Y-%m-%d %H:%M:%S.%f")
-
-        return start_dt
+        if 'start_datetime' in metadata:
+            dt_item  = metadata['start_datetime']
+            try:
+                str_fmt = "%Y-%m-%d %H:%M:%S.%f"
+                start_dt = datetime.datetime.strptime(dt_item, str_fmt)
+            except ValueError:
+                try:
+                    str_fmt = "%Y-%m-%d %H:%M:%S"
+                    start_dt = datetime.datetime.strptime(dt_item, str_fmt)
+                except ValueError:
+                    raise
+                    start_dt = None
+            return start_dt
+        else:
+            return None
 
 
     def init_yearly_iterator(self):
@@ -410,19 +265,22 @@ class StackerDataset:
         self.yearly_iterator = {}
 
         band_list = [1] # Initialise to the first band
-        yearOne   = self.get_raster_band_datetime().year
+        dt_one   = self.get_raster_band_datetime()
+        if dt_one is not None:
+            year_one = dt_one.year
+            self.yearly_iterator[year_one] = band_list
 
-        self.yearly_iterator[yearOne] = band_list
-
-        for i in range(2, self.bands + 1):
-            year = self.get_raster_band_datetime(raster_band=i).year
-            if year == yearOne:
-                band_list.append(i)
-                self.yearly_iterator[yearOne] = band_list
-            else:
-                self.yearly_iterator[yearOne] = band_list
-                yearOne = year
-                band_list = [i]
+            for i in range(2, self.bands + 1):
+                year = self.get_raster_band_datetime(raster_band=i).year
+                if year == year_one:
+                    band_list.append(i)
+                    self.yearly_iterator[year_one] = band_list
+                else:
+                    self.yearly_iterator[year_one] = band_list
+                    year_one = year
+                    band_list = [i]
+        else:
+            self.yearly_iterator[0] = range(1, self.bands + 1)
 
 
     def get_yearly_iterator(self):
@@ -433,29 +291,32 @@ class StackerDataset:
         return self.yearly_iterator
 
 
-    def init_tiling(self, xsize=100, ysize=100):
+    def init_tiling(self, xsize=None, ysize=None):
         """
         Sets the tile indices for a 2D array.
 
         :param xsize:
             Define the number of samples/columns to be included in a
             single tile.
-            Default is 100.
+            Default is the number of samples/columns.
 
         :param ysize:
             Define the number of lines/rows to be included in a single
             tile.
-            Default is 100.
+            Default is 10.
 
         :return:
             A list containing a series of tuples defining the
             individual 2D tiles/chunks to be indexed.
             Each tuple contains ((ystart, yend), (xstart, xend)).
         """
-
+        if xsize is None:
+            xsize = self.samples
+        if ysize is None:
+            ysize = 10
         self.tiles  = generate_tiles(self.samples, self.lines, xtile=xsize,
                                      ytile=ysize, Generator=False)
-        self.nTiles = len(self.tiles)
+        self.n_tiles = len(self.tiles)
 
 
     def get_tile(self, index=0):
@@ -477,18 +338,19 @@ class StackerDataset:
         return tile
 
 
-    def read_tile(self, tile, raster_band=1):
+    def read_tile(self, tile, raster_bands=1):
         """
         Read an x & y block specified by tile for a given raster band
-        using GDAL.
+        or raster bands using GDAL.
 
         :param tile:
             A tuple containing the start and end array indices, of the
             form ((ystart, yend), (xstart,xend)).
 
-        :param raster_band:
+        :param raster_bands:
             If reading from a single band, provide which raster band
-            to read from.
+            to read from. If raster_bands is a list, then it should
+            contain the raster band numbers from which to read.
             Default is raster band 1.
         """
 
@@ -502,13 +364,24 @@ class StackerDataset:
         # Open the dataset.
         ds = gdal.Open(self.fname)
 
-        band = ds.GetRasterBand(raster_band)
-
-        # Read the block and flush the cache (potentianl GDAL memory leak)
-        subset = band.ReadAsArray(xstart, ystart, xsize, ysize)
-        band.FlushCache()
+        if isinstance(raster_bands, collections.Sequence):
+            band = ds.GetRasterBand(1)
+            dtype = gdal_2_numpy_dtypes[band.DataType]
+            n_bands = len(raster_bands)
+            subset = ds.ReadRaster(xstart, ystart, xsize, ysize,
+                                   band_list=raster_bands)
+            subset = numpy.frombuffer(subset, dtype=dtype).reshape(n_bands,
+                                                                   ysize,
+                                                                   xsize)
+            ds.FlushCache()
+        else:
+            band = ds.GetRasterBand(raster_bands)
+            # Read the block and flush the cache (potentianl GDAL memory leak)
+            subset = band.ReadAsArray(xstart, ystart, xsize, ysize)
+            band.FlushCache()
 
         # Close the dataset
+        band = None
         ds = None
 
         return subset
@@ -539,6 +412,7 @@ class StackerDataset:
         ds.FlushCache()
 
         # Close the dataset
+        band = None
         ds = None
 
         return subset
@@ -567,7 +441,106 @@ class StackerDataset:
         band.FlushCache()
 
         # Close the dataset
+        band = None
         ds = None
 
         return array
 
+
+    def z_axis_stats(self, out_fname=None, raster_bands=None):
+        """
+        Compute statistics over the z-axis of the StackedDataset.
+        An image containing 14 raster bands, each describing a
+        statistical measure:
+
+            * 1. Sum                                                                     
+            * 2. Mean                                                                    
+            * 3. Valid Observations                                                      
+            * 4. Variance                                                                
+            * 5. Standard Deviation                                                      
+            * 6. Skewness                                                                
+            * 7. Kurtosis                                                                
+            * 8. Max                                                                     
+            * 9. Min                                                                     
+            * 10. Median (non-interpolated value)                                         
+            * 11. Median Index (zero based index)                                         
+            * 12. 1st Quantile (non-interpolated value)                                   
+            * 13. 3rd Quantile (non-interpolated value)                                   
+            * 14. Geometric Mean                                 
+
+        :param out_fname:
+            A string containing the full file system path name of the
+            image containing the statistical outputs.
+
+        :param raster_bands:
+            If raster_bands is None (Default) then statistics will be
+            calculated across all bands. Otherwise raster_bands can be
+            a list containing the raster bands of interest. This can be
+            sequential or non-sequential.
+
+        :return:
+            An instance of StackedDataset referencing the stats file.
+        """
+        # Check if the image tiling has been initialised
+        if self.n_tiles == 0:
+            self.init_tiling()
+
+        # Get the band names for the stats file
+        band_names = ['Sum',
+                      'Mean',
+                      'Valid Observations',
+                      'Variance',
+                      'Standard Deviation',
+                      'Skewness',
+                      'Kurtosis',
+                      'Max',
+                      'Min',
+                      'Median (non-interpolated value)',
+                      'Median Index (zero based index)',
+                      '1st Quantile (non-interpolated value)',
+                      '3rd Quantile (non-interpolated value)',
+                      'Geometric Mean']
+
+        # out number of bands
+        out_nb = 14
+
+        # Construct the output image file to contain the result
+        if out_fname is None:
+            out_fname = pjoin(self.fname, '_z_axis_stats')
+        driver = gdal.GetDriverByName("ENVI")
+        outds = driver.Create(out_fname, self.samples, self.lines, out_nb,
+                              gdal.GDT_Float32)
+
+        # Setup the geotransform and projection
+        outds.SetGeoTransform(self.geotransform) 
+        outds.SetProjection(self.projection)
+
+        # Construct a list of out band objects
+        out_bands = []
+        for i in range(out_nb):
+            out_bands.append(outds.GetRasterBand(i + 1))
+            out_bands[i].SetNoDataValue(numpy.nan)
+            out_bands[i].SetDescription(band_names[i])
+
+        # If we have None, set to read all bands
+        if raster_bands is None:
+            raster_bands = range(1, self.bands + 1)
+
+        # Check that we have an iterable
+        if not isinstance(raster_bands, collections.Sequence):
+            msg = 'raster_bands is not a list but a {}'
+            msg = msg.format(type(raster_bands))
+            raise TypeError(msg)
+
+        # Loop over every tile
+        for tile_n in range(self.n_tiles):
+            tile = self.get_tile(tile_n)
+            subset = self.read_tile(tile, raster_bands)
+            stats = temporal_stats(subset, no_data=self.no_data)
+            for i in range(out_nb):
+                write_band_tile(stats[i], out_bands[i], tile=tile)
+
+        out_bands = None
+        outds = None
+
+        return StackedDataset(out_fname)

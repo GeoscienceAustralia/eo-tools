@@ -294,7 +294,11 @@ def temporal_stats(array, no_data=None, as_bip=False):
 
     if no_data:
         wh = numexpr.evaluate("array == no_data")
-        array[wh] = NaN
+        if array.flags['WRITEABLE']:
+            array[wh] = NaN
+        else:
+            array = array.copy()
+            array[wh] = NaN
 
     if as_bip:
         # a few transpositions will take place, but they are quick to create
