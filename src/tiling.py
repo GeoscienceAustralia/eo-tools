@@ -174,7 +174,7 @@ class TiledOutput:
             (a - img).sum() == 0
             >>> len(tiles)
             100
-            >>> outds = TiledOutput('test_tiled_output', samples=a.shape[1], lines=a.shape[0])
+            >>> outds = TiledOutput('test_tiled_output_2D', samples=a.shape[1], lines=a.shape[0])
             >>> outds.closed
             False
             >>> for tile in tiles:
@@ -187,7 +187,39 @@ class TiledOutput:
             >>> outds.closed
             True
             >>>
-            >>> inds = gdal.Open('test_tiled_output')
+            >>> inds = gdal.Open('test_tiled_output_2D')
+            >>> img = inds.ReadAsArray()
+            >>> a.shape == img.shape
+            True
+            >>> (a - img).sum() == 0
+            True
+            >>> a = numpy.random.randint(0, 256, (10, 100, 100)).astype('uint8')
+            outds.closed
+            >>> tiles = generate_tiles(a.shape[2], a.shape[1], 10, 10, Generator=False)
+            >>> outds = TiledOutput('test_tiled_output_3D', samples=a.shape[2], lines=a.shape[1], bands=a.shape[0])
+            for tile in tiles:
+                ys, ye = tile[0]
+                xs, xe = tile[1]
+                subset = a[:, ys:ye, xs:xe]
+                outds.write_tile(subset, tile)
+            >>> outds.closed
+            False
+            >>> for tile in tiles:
+            ...     ys, ye = tile[0]
+            ...     xs, xe = tile[1]
+            ...     subset = a[:, ys:ye, xs:xe]
+            ...     outds.write_tile(subset, tile)
+            ...
+            outds.close()
+            outds.closed
+            inds = gdal.Open('test_tiled_output_3D')
+            img = inds.ReadAsArray()
+            a.shape == img.shape
+            (a - img).sum() == 0
+            >>> outds.close()
+            >>> outds.closed
+            True
+            >>> inds = gdal.Open('test_tiled_output_3D')
             >>> img = inds.ReadAsArray()
             >>> a.shape == img.shape
             True
