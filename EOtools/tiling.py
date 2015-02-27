@@ -118,7 +118,7 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, generator=True):
                     xend = xstep + xtile
                 else:
                     xend = samples
-                tiles.append(((ystep,yend),(xstep, xend)))
+                tiles.append(((ystep, yend),(xstep, xend)))
         return tiles
 
     xstart = numpy.arange(0,samples,xtile)
