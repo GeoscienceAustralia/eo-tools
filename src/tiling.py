@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 
 # ===============================================================================
 # Copyright (c)  2014 Geoscience Australia
@@ -34,10 +34,10 @@ import numpy
 # Author: Josh Sixsmith; joshua.sixsmith@ga.gov.au
 
 
-def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
+def generate_tiles(samples, lines, xtile=100, ytile=100, generator=True):
     """
     Generates a list of tile indices for a 2D array.
-    If Generator is set to True (Default), then a Python generator
+    If generator is set to True (Default), then a Python generator
     object will be returned rather than a list.
 
     :param samples:
@@ -54,13 +54,13 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
         (Optional) The desired size of the tile in the y-direction.
         Default is 100.
 
-    :param Generator:
+    :param generator:
         A boolean indicating if a Python generator should be returned
         rather than a list.  True (Default) will return a Python
         generator object.
 
     :return:
-        If Generator is set to True (Default), then a Python generator
+        If generator is set to True (Default), then a Python generator
         object will be returned. If set to False then a list of tuples
         containing the precalculated tiles used for indexing a larger
         array.
@@ -69,7 +69,7 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
 
     Example:
 
-        >>> tiles = generate_tiles(8624, 7567, xtile=1000, ytile=400, Generator=False)
+        >>> tiles = generate_tiles(8624, 7567, xtile=1000, ytile=400, generator=False)
         >>>
         >>> for tile in tiles:
         >>>     ystart = int(tile[0][0])
@@ -125,7 +125,7 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, Generator=True):
 
     xstart = numpy.arange(0, samples, xtile)
     ystart = numpy.arange(0, lines, ytile)
-    if Generator:
+    if generator:
         return tiles_generator(samples, lines, xstart, ystart)
     else:
         return tiles_list(samples, lines, xstart, ystart)
@@ -170,7 +170,7 @@ class TiledOutput:
 
         :example:
             >>> a = numpy.random.randint(0, 256, (1000, 1000)).astype('uint8')
-            >>> tiles = generate_tiles(a.shape[1], a.shape[0], 100, 100, Generator=False)
+            >>> tiles = generate_tiles(a.shape[1], a.shape[0], 100, 100, generator=False)
             (a - img).sum() == 0
             >>> len(tiles)
             100
@@ -195,7 +195,7 @@ class TiledOutput:
             True
             >>> a = numpy.random.randint(0, 256, (10, 100, 100)).astype('uint8')
             outds.closed
-            >>> tiles = generate_tiles(a.shape[2], a.shape[1], 10, 10, Generator=False)
+            >>> tiles = generate_tiles(a.shape[2], a.shape[1], 10, 10, generator=False)
             >>> outds = TiledOutput('test_tiled_output_3D', samples=a.shape[2], lines=a.shape[1], bands=a.shape[0])
             for tile in tiles:
                 ys, ye = tile[0]
