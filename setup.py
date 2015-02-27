@@ -30,8 +30,7 @@
 from distutils.core import setup
 
 setup(name='EOtools',
-      version = '0.1',
-      package_dir = {'EOtools' : 'src'},
+      version = '0.3',
       packages = ['EOtools','EOtools.DatasetDrivers','EOtools.metadata',
                   'EOtools.bodies','EOtools.stats'],
       package_data = {'EOtools.DatasetDrivers': ['_scene_dataset.xml'],
