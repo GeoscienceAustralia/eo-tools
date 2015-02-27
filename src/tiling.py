@@ -129,7 +129,7 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, generator=True):
         return tiles_list(samples, lines, xstart, ystart)
 
 
-class TiledOutput:
+class TiledOutput(object):
 
     def __init__(self, out_fname, samples=None, lines=None, bands=1,
                  geobox=None, fmt="ENVI", nodata=None, dtype=gdal.GDT_Byte):
