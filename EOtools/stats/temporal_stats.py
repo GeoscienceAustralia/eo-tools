@@ -154,7 +154,8 @@ def main(infile, outfile, file_driver='ENVI', xtile=None, ytile=None, noData=Non
     if (ytile is None):
         ytile = 100
 
-    tiles = tiling.generate_tiles(samples, lines, xtile, ytile, Generator=False)
+    tiles = tiling.generate_tiles(samples, lines, xtile, ytile,
+                                  generator=False)
     print('number of tiles: ', len(tiles))
 
     # set zero point for time and make copies for each section needing times
