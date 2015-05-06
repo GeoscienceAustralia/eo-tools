@@ -315,7 +315,7 @@ class StackedDataset:
         if ysize is None:
             ysize = 10
         self.tiles  = generate_tiles(self.samples, self.lines, xtile=xsize,
-                                     ytile=ysize, Generator=False)
+                                     ytile=ysize, generator=False)
         self.n_tiles = len(self.tiles)
 
 
