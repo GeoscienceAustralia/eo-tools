@@ -33,7 +33,7 @@ from __future__ import absolute_import
 import unittest
 import numpy
 import math
-from EOtools.blrb import bilinear, subdivide, indices, interpolate_block
+from eotools.blrb import bilinear, subdivide, indices, interpolate_block
 
 
 class BLRBTest(unittest.TestCase):

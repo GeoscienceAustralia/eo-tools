@@ -40,14 +40,14 @@ import unittest
 import os
 import logging
 import subprocess
-from EOtools.utils import log_multiline
+from eotools.utils import log_multiline
 
 
 class TestLogMultiline(unittest.TestCase):
 
     """Unit tests for the log_multiline utility function."""
 
-    MODULE = 'EOtools.utils'
+    MODULE = 'eotools.utils'
     SUITE = 'TestLogMultiline'
 
     OUTPUT_DIR = '.'  # dbutil.output_directory(MODULE, SUITE)

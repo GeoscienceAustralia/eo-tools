@@ -44,7 +44,7 @@ import unittest
 
 import numpy
 
-from EOtools import tiling
+from eotools import tiling
 
 
 class TestGetTile3(unittest.TestCase):
