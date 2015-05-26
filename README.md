@@ -1,2 +1,2 @@
-EO_tools
+eotools
 ========
