@@ -32,7 +32,9 @@ from os.path import join as pjoin
 import datetime
 import numpy
 from osgeo import gdal
+from EOtools.geobox import GriddedGeoBox
 from EOtools.tiling import generate_tiles
+from EOtools.tiling import TiledOutput
 from EOtools.stats.temporal_stats import temporal_stats
 
 gdal_2_numpy_dtypes = {1: 'uint8',
@@ -46,47 +48,6 @@ gdal_2_numpy_dtypes = {1: 'uint8',
                        9: 'complex64',
                        10: 'complex64',
                        11: 'complex128'}
-
-
-def write_band_tile(array, band_ds, no_data=None, tile=None):
-    """
-    Given a gdal.band object and optionally a tile index, write the
-    x & y tile/block to disk.
-
-    :param array:
-        A 2D NumPy array.
-
-    :param band_ds:
-        An instance of a gdal.band object suitable for writing to
-        disk.
-
-    :param no_data:
-        A float64 value indicating the no data value. If unset, then
-        no_data is ignored.
-
-    :param tile:
-        (Optional) If array is a subset of a larger array then tile
-        is a tuple containing the subsets locations in the form
-        ((ystart, yend), (xstart, xend)).
-    """
-    # Check if we have a GDAL band object
-    if isinstance(band_ds, gdal.Band):
-        if tile is None:
-            if no_data is not None:
-                band_ds.SetNoDataValue(no_data)
-            band_ds.WriteArray(array)
-            band_ds.FlushCache()
-        else:
-            xstart = int(tile[1][0])
-            ystart = int(tile[0][0])
-            if no_data is not None:
-                band_ds.SetNoDataValue(no_data)
-            band_ds.WriteArray(array, xstart, ystart)
-            band_ds.FlushCache()
-    else:
-        msg = 'band_ds is not of type gdal.band. band_ds is of type {}'
-        msg = msg.format(type(band_ds))
-        raise TypeError(msg)
 
 
 class StackedDataset:
@@ -374,6 +335,7 @@ class StackedDataset:
                                                                    ysize,
                                                                    xsize)
             ds.FlushCache()
+            subset.flags['WRITEABLE'] = True
         else:
             band = ds.GetRasterBand(raster_bands)
             # Read the block and flush the cache (potentianl GDAL memory leak)
@@ -507,20 +469,20 @@ class StackedDataset:
         # Construct the output image file to contain the result
         if out_fname is None:
             out_fname = pjoin(self.fname, '_z_axis_stats')
-        driver = gdal.GetDriverByName("ENVI")
-        outds = driver.Create(out_fname, self.samples, self.lines, out_nb,
-                              gdal.GDT_Float32)
 
-        # Setup the geotransform and projection
-        outds.SetGeoTransform(self.geotransform) 
-        outds.SetProjection(self.projection)
+        geobox = GriddedGeoBox(shape=(self.lines, self.samples),
+                               origin=(self.geotransform[0],
+                                       self.geotransform[3]),
+                               pixelsize=(self.geotransform[1],
+                                          self.geotransform[5]),
+                               crs=self.projection)
 
-        # Construct a list of out band objects
-        out_bands = []
+        outds = TiledOutput(out_fname, self.samples, self.lines, out_nb,
+                            geobox, no_data=numpy.nan, dtype=gdal.GDT_Float32)
+
+        # Write the band names
         for i in range(out_nb):
-            out_bands.append(outds.GetRasterBand(i + 1))
-            out_bands[i].SetNoDataValue(numpy.nan)
-            out_bands[i].SetDescription(band_names[i])
+            outds.out_bands[i].SetDescription(band_names[i])
 
         # If we have None, set to read all bands
         if raster_bands is None:
@@ -537,10 +499,8 @@ class StackedDataset:
             tile = self.get_tile(tile_n)
             subset = self.read_tile(tile, raster_bands)
             stats = temporal_stats(subset, no_data=self.no_data)
-            for i in range(out_nb):
-                write_band_tile(stats[i], out_bands[i], tile=tile)
+            outds.write_tile(stats, tile)
 
-        out_bands = None
-        outds = None
+        outds.close()
 
         return StackedDataset(out_fname)
