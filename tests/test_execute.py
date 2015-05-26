@@ -36,7 +36,7 @@ Created on 02/09/2014
 '''
 
 import unittest
-from EOtools.execute import execute
+from eotools.execute import execute
 
 class TestExecute(unittest.TestCase):
     """Unit tests for the execute utility function."""

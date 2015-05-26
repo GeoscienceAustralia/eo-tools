@@ -32,10 +32,10 @@ from os.path import join as pjoin
 import datetime
 import numpy
 from osgeo import gdal
-from EOtools.geobox import GriddedGeoBox
-from EOtools.tiling import generate_tiles
-from EOtools.tiling import TiledOutput
-from EOtools.stats.temporal_stats import temporal_stats
+from eotools.geobox import GriddedGeoBox
+from eotools.tiling import generate_tiles
+from eotools.tiling import TiledOutput
+from eotools.stats.temporal_stats import temporal_stats
 
 gdal_2_numpy_dtypes = {1: 'uint8',
                        2: 'uint16',

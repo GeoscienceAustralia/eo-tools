@@ -30,7 +30,7 @@
 '''Unit test for vincenty.py'''
 
 import unittest, math
-from EOtools.bodies.vincenty import vinc_dist, vinc_pt, GreatCircle
+from eotools.bodies.vincenty import vinc_dist, vinc_pt, GreatCircle
 
 class VincentyTestCase(unittest.TestCase):
     def runTest(self):

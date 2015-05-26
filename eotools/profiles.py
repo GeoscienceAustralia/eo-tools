@@ -4,8 +4,8 @@ import collections
 import numpy
 from scipy.ndimage import map_coordinates
 
-from EOtools.coordinates import convert_coordinates
-from EOtools.DatasetDrivers.stacked_dataset import StackedDataset
+from eotools.coordinates import convert_coordinates
+from eotools.DatasetDrivers.stacked_dataset import StackedDataset
 
 
 def x_profile(stacked_dataset, xy, raster_band=1, from_map=False):

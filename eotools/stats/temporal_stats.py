@@ -36,7 +36,7 @@ from osgeo import gdal
 from datetime import datetime
 import numexpr
 
-from EOtools import tiling
+from eotools import tiling
 
 #Author: Josh Sixsmith; joshua.sixsmith@ga.gov.au
 """

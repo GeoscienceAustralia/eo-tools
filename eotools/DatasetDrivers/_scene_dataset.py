@@ -39,12 +39,12 @@ from datetime import datetime, date, time
 import xml.dom.minidom
 from osgeo import gdal, gdalconst, osr
 
-from EOtools.bodies import Satellite
-from EOtools.bodies import geocentric_lat
-from EOtools.metadata import Metadata, XMLMetadata, MTLMetadata, ReportMetadata
-from EOtools.utils import find_files
-from EOtools.utils import unicode_to_ascii
-from EOtools.gdal_tools import ImageShape
+from eotools.bodies import Satellite
+from eotools.bodies import geocentric_lat
+from eotools.metadata import Metadata, XMLMetadata, MTLMetadata, ReportMetadata
+from eotools.utils import find_files
+from eotools.utils import unicode_to_ascii
+from eotools.gdal_tools import ImageShape
 
 from . import Dataset, DSException
 
