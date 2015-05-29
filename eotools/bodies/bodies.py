@@ -45,7 +45,7 @@ import logging
 import ephem
 import xml.dom.minidom
 from datetime import timedelta
-from EOtools.utils import unicode_to_ascii, log_multiline
+from eotools.utils import unicode_to_ascii, log_multiline
 
 logger = logging.getLogger('root.' + __name__)
 
