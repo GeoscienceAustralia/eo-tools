@@ -30,7 +30,7 @@
 '''Unit test for blrb.py'''
 
 import unittest, numpy, math
-from EOtools.blrb import bilinear, subdivide, indices, interpolate_block
+from eotools.blrb import bilinear, subdivide, indices, interpolate_block
 
 class BLRBTest(unittest.TestCase):
 

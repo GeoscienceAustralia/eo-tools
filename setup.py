@@ -29,13 +29,13 @@
 
 from distutils.core import setup
 
-setup(name='EOtools',
+setup(name='eotools',
       version = '0.3',
-      packages = ['EOtools','EOtools.DatasetDrivers','EOtools.metadata',
-                  'EOtools.bodies','EOtools.stats'],
-      package_data = {'EOtools.DatasetDrivers': ['_scene_dataset.xml'],
-                      'EOtools.bodies': ['satellite.xml']},
-      author = 'Roger Edberg, Alex Ip, Josh Sixsmith',
+      packages = ['eotools','eotools.DatasetDrivers','eotools.metadata',
+                  'eotools.bodies','eotools.stats'],
+      package_data = {'eotools.DatasetDrivers': ['_scene_dataset.xml'],
+                      'eotools.bodies': ['satellite.xml']},
+      author = 'Various',
       maintainer = 'Geoscience Australia',
       description = 'Collection of Earth Observation Tools.',
       long_description = 'Collection includes: DatasetDrivers, temporal statistics, array tiling.',

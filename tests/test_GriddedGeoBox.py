@@ -1,7 +1,7 @@
 #!/bin/env python
 
 import unittest
-from EOtools import GriddedGeoBox
+from eotools import GriddedGeoBox
 import affine
 import rasterio as rio
 from osgeo import osr
