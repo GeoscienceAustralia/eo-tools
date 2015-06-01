@@ -62,8 +62,9 @@ forward and reverse azimuths between the points (alpha12, alpha21).
 '''
 
 from __future__ import absolute_import
-import numpy
 import math
+
+import numpy
 
 __version__ = '1.0.1'
 
@@ -267,7 +268,7 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 
     while (last_lembda < -3000000.0 or lembda != 0 and abs((last_lembda - lembda) / lembda) > 1.0e-9):
 
-        sqr_sin_sigma = pow( math.cos(U2) * math.sin(lembda), 2) + \
+        sqr_sin_sigma = pow(math.cos(U2) * math.sin(lembda), 2) + \
             pow((math.cos(U1) * math.sin(U2) -
                  math.sin(U1) * math.cos(U2) * math.cos(lembda)), 2)
 
@@ -286,8 +287,12 @@ def vinc_dist(f, a, phi1, lembda1, phi2, lembda2):
 
         last_lembda = lembda
 
-        lembda = omega + (1 - C) * f * math.sin(alpha) * (sigma + C * math.sin(sigma)
-                                                          * (Cos2sigma_m + C * math.cos(sigma) * (-1 + 2 * pow(Cos2sigma_m, 2))))
+        lembda = omega + (1 - C) * f * math.sin(alpha) * \
+                         (
+                             sigma +
+                             C * math.sin(sigma) *
+                             (Cos2sigma_m + C * math.cos(sigma) * (-1 + 2 * pow(Cos2sigma_m, 2)))
+                         )
 
     u2 = pow(math.cos(alpha), 2) * (a * a - b * b) / (b * b)
 
@@ -375,12 +380,18 @@ def vinc_pt(f, a, phi1, lembda1, alpha12, s):
     while (abs((last_sigma - sigma) / sigma) > 1.0e-9):
         two_sigma_m = 2 * sigma1 + sigma
 
-        delta_sigma = B * math.sin(sigma) * (math.cos(two_sigma_m)
-                                             + (B / 4) * (math.cos(sigma) *
-                                                          (-1 + 2 * math.pow(math.cos(two_sigma_m), 2) -
-                                                           (B / 6) * math.cos(two_sigma_m) *
-                                                           (-3 + 4 * math.pow(math.sin(sigma), 2)) *
-                                                           (-3 + 4 * math.pow( math.cos (two_sigma_m), 2 ))))) \
+        delta_sigma = B * math.sin(sigma) * (
+            math.cos(two_sigma_m) +
+            (B / 4) * (
+                math.cos(sigma) *
+                (
+                    -1 + 2 * math.pow(math.cos(two_sigma_m), 2) -
+                    (B / 6) * math.cos(two_sigma_m) *
+                    (-3 + 4 * math.pow(math.sin(sigma), 2)) *
+                    (-3 + 4 * math.pow(math.cos(two_sigma_m), 2))
+                )
+            )
+        )
 
         last_sigma = sigma
         sigma = (s / (b * A)) + delta_sigma

@@ -1273,7 +1273,7 @@ class SceneDataset(Dataset):
                 assert var_name, 'Variable has no name defined'
 
                 # Skip variable_node if not included in list to write
-                if var_list and not var_name in var_list:
+                if var_list and var_name not in var_list:
                     continue
 
                 logger.debug('Variable name = %s', var_name)

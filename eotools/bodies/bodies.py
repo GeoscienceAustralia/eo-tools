@@ -42,9 +42,11 @@ import math
 import os
 import re
 import logging
-import ephem
 import xml.dom.minidom
 from datetime import timedelta
+
+import ephem
+
 from eotools.utils import unicode_to_ascii, log_multiline
 
 logger = logging.getLogger('root.' + __name__)
@@ -357,9 +359,14 @@ class Satellite(object):
             r'^([2])(.+)$'
         )
 
-        def _cmp(x, y): return abs(x) - abs(y)  # For sorting date offsets.
+        def _date_distance(x, y):
+            return abs(x) - abs(y)
 
-        date_deltas = [timedelta(days=d) for d in sorted(range(-date_radius, date_radius), cmp=_cmp)]
+        date_deltas = [
+            timedelta(days=d)
+            for d in sorted(range(-date_radius, date_radius), cmp=_date_distance)
+            ]
+
         yyddd_list = [x.strftime('%02y%03j') for x in [(centre_datetime + d) for d in date_deltas]]
 
         tle_archive_path = os.path.join(
