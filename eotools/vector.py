@@ -8,19 +8,19 @@ import pandas
 from image_processing.segmentation.rasterise import project_vector
 
 
-def spatial_intersection(input_vector_fname, base_vector_fname, envelope=True):
+def spatial_intersection(base_vector_fname, input_vector_fname, envelope=True):
     """
     Performs a spatial intersection of feature geometry to and
     returns a list of FID's from the base vector file.
-
-    :param input_vector_fname:
-        A string containing the full file path name to an
-        OGR compliant vector file.
 
     :param base_vector_fname:
         A string containing the full file path name to an
         OGR compliant vector file. This file will be used to select
         features from.
+
+    :param input_vector_fname:
+        A string containing the full file path name to an
+        OGR compliant vector file.
 
     :param envelope:
         If set to True (Default), then the envelope of each feature
@@ -84,7 +84,7 @@ def retrieve_attribute_table(layer):
         cols.append(name)
 
     df = pandas.DataFrame(columns=cols)
-    table  {}
+    table = {}
 
     for feat in layer:
         table['FID'] = feat.GetFID()
