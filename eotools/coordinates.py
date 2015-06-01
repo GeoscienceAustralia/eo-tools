@@ -4,7 +4,6 @@ from __future__ import absolute_import
 import collections
 
 import gdal
-import osr
 
 
 def convert_coordinates(geotransform, xy, to_map=True, centre=False):
@@ -68,42 +67,4 @@ def convert_coordinates(geotransform, xy, to_map=True, centre=False):
             invgt = gdal.InvGeoTransform(geotransform)[1]
             x = int(xy[0] * invgt[1] + invgt[0])
             y = int(invgt[3] - xy[1] * abs(invgt[5]))
-        return (x, y)
-
-
-def transform_coordinates(xy, to_crs):
-    """
-    Transform a tuple co-ordinate pair (x, y) from one CRS to
-    another.
-
-    :param xy:
-        A tuple containing an (x, y) co-ordinate pair of real
-        world co-ordinates. If xy is a list of tuple co-ordinate
-        pairs, then each (x, y) pair will be transformed, eg
-        [(x, y), (x, y), (x, y)].
-
-    :param to_crs:
-        An instance of a defined osr.SpatialReference object.
-
-    :return:
-        A tuple (x, y) floating point co-ordinate pair. If xy is a
-        list of tuple co-ordinate pairs, then a list of (x, y)
-        floating point co-ordinate pairs will be returned, eg
-        [(x, y), (x, y), (x, y)]
-    """
-    if not isinstance(to_crs, osr.SpatialReference):
-        err = 'Err: to_crs is not an instance of osr.SpatialReference: {}'
-        err = err.format(type(to_crs))
-        raise TypeError(err)
-
-    # Define the transform we are transforming to
-    transform = osr.CoordinateTransformation(self.crs, to_crs)
-
-    # If we have a list of tuples otherwise we'll get an int
-    if isinstance(xy[0], collections.Sequence):
-        points = transform.TransformPoints(xy)
-        xy = [(x, y) for x, y, _ in points]
-        return xy
-    else:
-        (x, y, _) = transformation.TransformPoint(xy[0], xy[1])
-        return (x, y)
+        return x, y

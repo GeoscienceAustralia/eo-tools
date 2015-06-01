@@ -34,7 +34,6 @@ Some tools used to work with GDAL.
 from __future__ import absolute_import
 from __future__ import print_function
 import os
-import sys
 import logging
 import numpy
 from osgeo import gdal, osr

@@ -96,6 +96,9 @@ def geocentric_lat(lat_gd, sm_axis=earth.A, ecc2=earth.ECC2):
     Returns:
         Geocentric latitude (radians)
     """
+    # Is this parameter still being specified by anyone? Track via logs.
+    if sm_axis != earth.A:
+        logger.debug('sm_axis usage: %s', sm_axis)
 
     # return math.atan((1.0 - ecc2) * math.tan(lat_gd))
     return math.atan2(math.tan(lat_gd), 1.0 / (1.0 - ecc2))
@@ -112,6 +115,9 @@ def geodetic_lat(lat_gc, sm_axis=earth.A, ecc2=earth.ECC2):
     Returns:
         Geodetic latitude (radians)
     """
+    # Is this parameter still being specified by anyone? Track via logs.
+    if sm_axis != earth.A:
+        logger.debug('sm_axis usage: %s', sm_axis)
 
     return math.atan2(math.tan(lat_gc), (1.0 - ecc2))
 
@@ -375,8 +381,6 @@ class Satellite(object):
             'TLE', '%s_ARCHIVE.txt' % self.TAG
         )
 
-        tle_archive_text = ''
-
         with open(tle_archive_path, 'r') as fd:
             tle_archive_text = fd.read()
 
@@ -388,7 +392,6 @@ class Satellite(object):
             'INTL_DESIGNATOR': self.INTL_DESIGNATOR,
         }
 
-        tle_entry = None
         for yyddd in yyddd_list:
             _smap['YYDDD'] = yyddd
             m = re.search(TLE_ENTRY_PATTERN_FORMAT % _smap, tle_archive_text, re.MULTILINE)

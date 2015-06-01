@@ -421,7 +421,7 @@ class SceneDataset(Dataset):
                     m = re.search(r'(\w+)_([01]{16}).(\w+)$', f)
 
                     if m:
-                        suffix = m.group(2)
+                        # suffix = m.group(2)
                         extension = m.group(3).upper()
 
                         if extension == 'TIF':
@@ -718,7 +718,7 @@ class SceneDataset(Dataset):
 
         # Set up rgb bands
         if self.satellite.rgb_bands:
-            self.rgb_bands = [self._band_number_map[band_file_number] for band_file_number in self.satellite.rgb_bands]
+            self.rgb_bands = [self._band_number_map[band_file_num] for band_file_num in self.satellite.rgb_bands]
 
     def __set_instance_values(self):
         """
@@ -1603,7 +1603,7 @@ class SceneDataset(Dataset):
                                             template_band.DataType)
                 mem_dataset.SetGeoTransform(template_ds.GetGeoTransform())
                 mem_dataset.SetProjection(template_ds.GetProjection())
-                _proj = gdal.ReprojectImage(dataset, mem_dataset)
+                gdal.ReprojectImage(dataset, mem_dataset)
 
                 return mem_dataset.ReadAsArray()
 

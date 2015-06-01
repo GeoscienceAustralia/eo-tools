@@ -148,7 +148,7 @@ def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
     if array.ndim == 3:
         samples = dims[2]
         lines = dims[1]
-        bands = dims[0]
+        # bands = dims[0]
         combine = True
     else:
         samples = dims[1]

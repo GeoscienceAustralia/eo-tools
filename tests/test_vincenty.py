@@ -96,8 +96,6 @@ class VincentyTestCase(unittest.TestCase):
         lembda1 = (29.5244 / 60. + 25) / 60. + 144
         dist = 54972.271
         alpha12 = (5.37 / 60. + 52) / 60. + 306
-        phi2 = lembda2 = 0.0
-        alpha21 = 0.0
 
         phi2, lembda2, alpha21 = vinc_pt(f, a, math.radians(phi1), math.radians(lembda1), math.radians(alpha12), dist)
 

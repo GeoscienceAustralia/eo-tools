@@ -35,7 +35,6 @@ Author: Alex Ip (alex.ip@ga.gov.au)
 from __future__ import absolute_import
 from __future__ import print_function
 import xml.dom.minidom
-from StringIO import StringIO
 import logging
 import os
 import re

@@ -44,3 +44,5 @@ respective submodules, but should be imported from here, not directly from those
 from __future__ import absolute_import
 from ._dataset import Dataset, DSException
 from ._scene_dataset import SceneDataset
+
+__all__ = ['Dataset', 'DSException', 'SceneDataset']

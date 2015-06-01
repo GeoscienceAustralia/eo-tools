@@ -368,7 +368,6 @@ class StackedDataset:
         ds.FlushCache()
 
         # Close the dataset
-        band = None
         ds = None
 
         return subset

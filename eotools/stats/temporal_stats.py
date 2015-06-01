@@ -30,7 +30,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os
-import sys
 import argparse
 import numpy
 import re
@@ -285,7 +284,7 @@ def temporal_stats(array, no_data=None, as_bip=False):
 
     # assuming a 3D array, [bands,rows,cols]
     dims = array.shape
-    bands = dims[0]
+    # bands = dims[0]
     cols = dims[2]
     rows = dims[1]
 
@@ -346,10 +345,10 @@ def temporal_stats(array, no_data=None, as_bip=False):
         flat_sort = numpy.sort(array_bip, axis=2).flatten()
 
         # q2_offset
-        q2_idx = numexpr.evaluate("((vld_obsv / 2) + ((vld_obsv % 2) - 1))")  # median locations
+        # q2_idx = numexpr.evaluate("((vld_obsv / 2) + ((vld_obsv % 2) - 1))")  # median locations
 
         # array offsets
-        a_off = numpy.arange(cols * rows).reshape((rows, cols))
+        # a_off = numpy.arange(cols * rows).reshape((rows, cols))
 
         # turn the locations into a useable 1D index
         idx_1D = numexpr.evaluate("(q2_idx + a_off * bands)").astype('int')
@@ -360,8 +359,8 @@ def temporal_stats(array, no_data=None, as_bip=False):
         stats[10] = sort_orig_idx[idx_1D]
 
         # 1st quantile
-        length = numexpr.evaluate("q2_idx + 1")
-        q1_idx = numexpr.evaluate("((length / 2) + ((length % 2) - 1))")
+        # length = numexpr.evaluate("q2_idx + 1")
+        # q1_idx = numexpr.evaluate("((length / 2) + ((length % 2) - 1))")
         idx_1D = numexpr.evaluate("(q1_idx + a_off * bands)").astype('int')  # 1D index
         stats[11] = flat_sort[idx_1D]  # get 1st quantile
 
@@ -419,10 +418,10 @@ def temporal_stats(array, no_data=None, as_bip=False):
         flat_sort = numpy.sort(array, axis=0).flatten()
 
         # q2_offset
-        q2_idx = numexpr.evaluate("((vld_obsv / 2) + ((vld_obsv % 2) - 1))")  # median locations
+        # q2_idx = numexpr.evaluate("((vld_obsv / 2) + ((vld_obsv % 2) - 1))")  # median locations
 
         # array offsets
-        a_off = numpy.arange(cols * rows).reshape((rows, cols))
+        # a_off = numpy.arange(cols * rows).reshape((rows, cols))
 
         # turn the locations into a useable 1D index
         idx_1D = numexpr.evaluate("(q2_idx * cols * rows + a_off)").astype('int')
@@ -433,8 +432,8 @@ def temporal_stats(array, no_data=None, as_bip=False):
         stats[10] = sort_orig_idx[idx_1D]
 
         # 1st quantile
-        length = numexpr.evaluate("q2_idx + 1")
-        q1_idx = numexpr.evaluate("((length / 2) + ((length % 2) - 1))")
+        # length = numexpr.evaluate("q2_idx + 1")
+        # q1_idx = numexpr.evaluate("((length / 2) + ((length % 2) - 1))")
         idx_1D = numexpr.evaluate("(q1_idx * cols * rows + a_off)").astype('int')  # 1D index
         stats[11] = flat_sort[idx_1D]  # get 1st quantile
 
@@ -475,7 +474,7 @@ def create_envi_hdr(outfile, noData, new_bnames):
         fbn = line_num_finder(hdr, 'band names')
         new_hdr = hdr[0:fbn + 1]
         f_endbrace = line_num_finder(hdr, '}', offset=fbn)
-        bn_stuff = hdr[fbn:f_endbrace + 1]
+        # bn_stuff = hdr[fbn:f_endbrace + 1]
 
         for bname in new_bnames:
             new_hdr.append(bname + ',\n')
