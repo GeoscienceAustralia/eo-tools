@@ -32,10 +32,23 @@ from distutils.core import setup
 
 setup(name='eotools',
       version='0.3',
-      packages=['eotools', 'eotools.DatasetDrivers', 'eotools.metadata',
-                'eotools.bodies', 'eotools.stats'],
-      package_data={'eotools.DatasetDrivers': ['_scene_dataset.xml'],
-                    'eotools.bodies': ['satellite.xml']},
+      packages=[
+            'eotools',
+            'eotools.DatasetDrivers',
+            'eotools.metadata',
+            'eotools.bodies',
+            'eotools.stats'
+      ],
+      package_data={
+            'eotools.DatasetDrivers': ['_scene_dataset.xml'],
+            'eotools.bodies': ['satellite.xml']
+      },
+      requires=[
+            'numpy',
+            'scipy',
+            'gdal',
+            'numexpr',
+      ],
       author='Various',
       maintainer='Geoscience Australia',
       description='Collection of Earth Observation Tools.',
