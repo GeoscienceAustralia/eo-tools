@@ -37,8 +37,8 @@ import os
 import logging
 import numpy
 from osgeo import gdal, osr
-from EOtools.execute import execute
-from EOtools.meta import print_call
+from eotools.execute import execute
+from eotools.meta import print_call
 
 logger = logging.getLogger('root.' + __name__)
 
