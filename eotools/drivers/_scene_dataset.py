@@ -321,7 +321,7 @@ class SceneDataset(Dataset):
                 self.__load_bands_fc()
 
             else:
-                # ORTHO or NBAR dataset, get bands from DatasetDrivers/bodies/satellite.xml via self.satellite
+                # ORTHO or NBAR dataset, get bands from drivers/bodies/satellite.xml via self.satellite
                 self.__find_root_dataset_xml()
                 self.__load_bands_xml()
 
@@ -563,7 +563,7 @@ class SceneDataset(Dataset):
 
     def __find_root_dataset_xml(self):
         """
-        Method to find the root dataset using the band information DatasetDrivers/geodisic/satellite.xml.
+        Method to find the root dataset using the band information drivers/geodisic/satellite.xml.
         It also finds the data directory containing the sub-datasets.
 
         The results are stored in:
@@ -625,7 +625,7 @@ class SceneDataset(Dataset):
     def __load_bands_xml(self):
         """
         Method to load the bands into sub-datasets. Band information is from
-        DatasetDrivers/geodisic/satellite.xml via the self.satellite object.
+        drivers/geodisic/satellite.xml via the self.satellite object.
 
         The results are stored in:
             self._raster_dict - map from band number to dicts containing lookup information for each band
@@ -1469,7 +1469,7 @@ class SceneDataset(Dataset):
     @property
     def bounds_getter(self):
         """
-        A function that will produce a :py:class:`DatasetDrivers.utils.ImageShape` for this :py:class:`SceneDataset`.
+        A function that will produce a :py:class:`drivers.utils.ImageShape` for this :py:class:`SceneDataset`.
         That function takes a SceneDataset as an argument.
 
         :todo:

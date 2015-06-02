@@ -28,7 +28,7 @@
 # ===============================================================================
 
 """
-Provides utilities for logging and meta programming to DatasetDrivers.
+Provides utilities for logging and meta programming to dataset drivers.
 """
 
 from __future__ import absolute_import

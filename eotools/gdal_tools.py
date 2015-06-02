@@ -85,7 +85,7 @@ class Buffers(object):
             self.bottom = bottom
 
     def __str__(self):
-        return "DatasetDrivers.gdal_tools.Buffers(%s)" % ", ".join(
+        return "drivers.gdal_tools.Buffers(%s)" % ", ".join(
             map(str, (self.left, self.right, self.top, self.bottom)))
 
 
@@ -142,7 +142,7 @@ class ImageShape(object):
             self.__spatial_ref.ImportFromWkt(proj)
 
     def __str__(self):
-        return "DatasetDrivers.utils.ImageShape(%s)" % ", ".join(
+        return "drivers.utils.ImageShape(%s)" % ", ".join(
             map(str, (self._ImageShape__origin, self._ImageShape__pix_sz, self._ImageShape__dim)))
 
     @property
@@ -230,7 +230,7 @@ def default_bounds_getter(dataset):
     - If ``dataset`` is an instance of :py:class:`ImageShape`, then it is simply returned.
 
     - Otherwise, if ``dataset`` has an attribute ``bounds_getter`` it is retrieved and passed ``dataset``
-        (see :py:meth:`DatasetDrivers.dataset._scene_dataset.SceneDataset.bounds_getter` for an example).
+        (see :py:meth:`drivers.dataset._scene_dataset.SceneDataset.bounds_getter` for an example).
 
     - Otherwise ``dataset`` must be an instance of :py:class:`gdal.Dataset` (a :py:class:`TypeError` is
         raised otherwise), and the shape is generated with:
@@ -252,7 +252,7 @@ def default_bounds_getter(dataset):
         g = dataset.GetGeoTransform()
         return ImageShape(g[0], g[3], dataset.RasterXSize, dataset.RasterYSize, g[1], g[5], dataset.GetProjection())
     else:
-        raise TypeError("dataset must be instance of ImageShape, gdal.Dataset or DatasetDrivers.dataset.Dataset.")
+        raise TypeError("dataset must be instance of ImageShape, gdal.Dataset or drivers.dataset.Dataset.")
 
 
 @print_call(logger.info)

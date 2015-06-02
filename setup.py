@@ -34,13 +34,13 @@ setup(name='eotools',
       version='0.3',
       packages=[
             'eotools',
-            'eotools.DatasetDrivers',
+            'eotools.drivers',
             'eotools.metadata',
             'eotools.bodies',
             'eotools.stats'
       ],
       package_data={
-            'eotools.DatasetDrivers': ['_scene_dataset.xml'],
+            'eotools.drivers': ['_scene_dataset.xml'],
             'eotools.bodies': ['satellite.xml']
       },
       requires=[
@@ -52,6 +52,6 @@ setup(name='eotools',
       author='Various',
       maintainer='Geoscience Australia',
       description='Collection of Earth Observation Tools.',
-      long_description='Collection includes: DatasetDrivers, temporal statistics, array tiling.',
+      long_description='Collection includes: dataset drivers, temporal statistics, array tiling.',
       license='BSD 3',
       )

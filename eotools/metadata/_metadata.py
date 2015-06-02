@@ -384,7 +384,7 @@ class Metadata(object):
 
 if __name__ == '__main__':
     # Need a better test here
-    from DatasetDrivers.dataset import SceneDataset
+    from drivers.dataset import SceneDataset
     l = SceneDataset()
     l.Open('/home/alex/nbar/test_data/LS7_ETM_OTH_P51_GALPGS01_092_085_20100315')
     print(l.GetMetadata_List())
