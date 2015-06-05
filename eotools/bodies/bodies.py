@@ -49,7 +49,7 @@ import ephem
 
 from eotools.utils import unicode_to_ascii, log_multiline
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 class earth(object):

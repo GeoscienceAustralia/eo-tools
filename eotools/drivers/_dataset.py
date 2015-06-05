@@ -43,7 +43,7 @@ from __future__ import print_function
 from osgeo import gdal, gdalconst, osr
 import logging
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 class DSException(Exception):

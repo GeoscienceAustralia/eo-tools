@@ -42,7 +42,7 @@ import re
 from eotools.utils import unicode_to_ascii
 from . import Metadata
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 class XMLMetadata(Metadata):

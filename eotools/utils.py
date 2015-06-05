@@ -34,7 +34,7 @@ import unicodedata
 import re
 from pprint import pformat
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 def log_multiline(log_function, log_text, title=None, prefix=''):

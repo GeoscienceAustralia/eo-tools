@@ -40,7 +40,7 @@ from osgeo import gdal, osr
 from eotools.execute import execute
 from eotools.meta import print_call
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 
 NUMPY_GDAL_TYPE_MAP = {
     # numpy dtype: GDAL dtype

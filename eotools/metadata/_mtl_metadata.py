@@ -36,7 +36,7 @@ from __future__ import absolute_import
 import logging
 from . import Metadata
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 
 
 class MTLMetadata(Metadata):

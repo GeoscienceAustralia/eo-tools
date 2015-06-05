@@ -40,7 +40,7 @@ import numpy
 import logging
 from .meta import print_call
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 
 DEFAULT_ORIGIN = (0, 0)
 DEFAULT_SHAPE = (8, 8)

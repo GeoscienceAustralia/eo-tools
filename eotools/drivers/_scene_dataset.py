@@ -52,7 +52,7 @@ from eotools.gdal_tools import ImageShape
 
 from . import Dataset, DSException
 
-logger = logging.getLogger('root.' + __name__)
+logger = logging.getLogger(__name__)
 gdal.UseExceptions()
 
 
