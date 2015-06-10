@@ -31,7 +31,7 @@ from __future__ import absolute_import
 from distutils.core import setup
 
 setup(name='eotools',
-      version='0.4',
+      version='0.5b',
       packages=[
             'eotools',
             'eotools.drivers',
