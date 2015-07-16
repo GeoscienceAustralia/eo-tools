@@ -2,6 +2,7 @@
 __pycache__
 dist
 sdist
+build
 *.so
 pip-log.txt
 .DS_Store
