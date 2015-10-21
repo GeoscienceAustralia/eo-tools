@@ -37,7 +37,6 @@ setup(name='eotools',
             'eotools.drivers',
             'eotools.metadata',
             'eotools.bodies',
-            'eotools.stats'
       ],
       package_data={
             'eotools.drivers': ['_scene_dataset.xml'],
