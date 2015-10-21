@@ -78,9 +78,15 @@ def bulk_stats(array, no_data=None, double=False, as_bip=False):
         memory access order. No difference maybe apparent as the
         transposed data will just be a view.
 
-    Returns:
+    :Returns:
         A numpy float32 array, unless `double` is set to True,
         with NaN representing no data values.
+
+    :Notes:
+        The formulae for the skewness and kurtosis are taken from the
+        IDL (Exelisvis) help menu. This may differ slightly from the
+        scipy formulae, however both forms produce results in the
+        expected range.
     """
 
     # assuming a 3D array, [bands,rows,cols]
