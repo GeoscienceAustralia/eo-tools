@@ -31,8 +31,8 @@ def bulk_stats(array, no_data=None, double=False, as_bip=False):
     containing [z,y,x] data.
     Statistics produced in this order are:
     Sum
-    Valid Observations
     Mean
+    Valid Observations
     Variance
     Standard Deviation
     Skewness
