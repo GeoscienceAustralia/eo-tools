@@ -33,7 +33,7 @@ import numpy
 import numexpr
 
 
-def temporal_stats(array, no_data=None, double=False, as_bip=False):
+def bulk_stats(array, no_data=None, double=False, as_bip=False):
     """
     Calculates statistics over the temporal/spectral/z domain
     of a multiband image.
