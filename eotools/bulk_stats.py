@@ -62,6 +62,8 @@ def bulk_stats(array, no_data=None, double=False, as_bip=False):
 
     :param no_data:
         The data value to ignore for calculations. Default is None.
+        If set and `array` is not of type float (32 or 64), then
+        `array` will be cast to a `float32` array.
 
     :param double:
         If set to True then `array` will be converted to float64 and
@@ -111,6 +113,9 @@ def bulk_stats(array, no_data=None, double=False, as_bip=False):
         dtype = 'float64'
 
     if no_data:
+        # Promote to float32 if we have ints
+        if array.dtype.name not in ['float', 'float32', 'float64']:
+            array = numpy.float32(array)
         wh = numexpr.evaluate("array == no_data")
         array[wh] = nan
 
