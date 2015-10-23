@@ -41,5 +41,5 @@ setup(name='eotools',
       maintainer='Geoscience Australia',
       description='Collection of Earth Observation Tools.',
       long_description='Collection includes: dataset drivers, temporal statistics, array tiling.',
-      license='BSD 3',
+      license='Apache License 2.0',
       )
