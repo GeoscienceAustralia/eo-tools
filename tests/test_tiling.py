@@ -61,8 +61,10 @@ class TestGetTile3(unittest.TestCase):
     exception_input1 = [(0, 4000, 97, 101), (4000, 0, 101, 97),
                         (-1, 4001, 100, 100), (4001, -1, 101, 97)]
 
-    exception_input2 = [(4001, 4003, 0, 100), (4003, 4001, 100, 0),
-                        (4000, 4000, -1, 100), (4000, 4000, 100, -1)]
+    exception_input2 = [(4001, 4003, 0, 100), (4003, 4001, 100, 0)]
+    # TODO have a test for negative tile sizes
+    # exception_input2 = [(4001, 4003, 0, 100), (4003, 4001, 100, 0),
+    #                     (4000, 4000, -1, 100), (4000, 4000, 100, -1)]
 
     def test_normal(self):
         """Test typical input:"""
@@ -79,21 +81,21 @@ class TestGetTile3(unittest.TestCase):
     def test_exception_1(self):
         """Test empty image:"""
         for (samples, lines, xtile, ytile) in self.exception_input1:
-            tiles_list = tiling.generate_tiles(samples, lines, xtile, ytile)
+            tiles_list = tiling.generate_tiles(samples, lines, xtile, ytile,
+                                               False)
             self.assertEqual(tiles_list, [], 'Expected an empty tile list.')
 
     def test_exception_2(self):
         """Test empty tiles:"""
         for (samples, lines, xtile, ytile) in self.exception_input2:
-            self.assertRaises(
-                (ArithmeticError, AssertionError),
-                tiling.generate_tiles,
-                samples, lines, xtile, ytile)
+            self.assertRaises(ZeroDivisionError, tiling.generate_tiles,
+                              samples, lines, xtile, ytile, False)
 
     def do_test(self, test_input):
         """Check sizes and coverage for a list of test input."""
         for (samples, lines, xtile, ytile) in test_input:
-            tiles_list = tiling.generate_tiles(samples, lines, xtile, ytile)
+            tiles_list = tiling.generate_tiles(samples, lines, xtile, ytile,
+                                               False)
 
             self.check_sizes(xtile, ytile, tiles_list)
             self.check_tiling(samples, lines, tiles_list)
@@ -101,7 +103,9 @@ class TestGetTile3(unittest.TestCase):
     def check_sizes(self, xtile, ytile, tiles_list):
         """Check that the tiles in tiles_list have appropriate extents."""
         for tile in tiles_list:
-            (ystart, yend, xstart, xend) = tile
+            yse, xse = tile
+            ystart, yend = yse
+            xstart, xend = xse
             self.assertTrue(0 <= xstart < xend,
                             'Tile empty - xcoord: ' + repr(tile))
             self.assertTrue(0 <= ystart < yend,
@@ -132,7 +136,7 @@ class TestGetTile3(unittest.TestCase):
         # pylint: enable=unbalanced-tuple-unpacking
 
         for (tag, flat_index) in zip(unique, unique_indices):
-            index = numpy.unravel_index(flat_index, (samples, lines))
+            index = numpy.unravel_index(flat_index, (lines, samples))
             self.assertGreater(tag, 0,
                                'Hole in coverage detected at ' + repr(index))
             self.assertIn(tag, tag_dict,
@@ -163,11 +167,13 @@ def generate_test_array(samples, lines, tiles_list, tag_array):
     to each tile's extent.
 
     """
-    test_array = numpy.zeros((samples, lines), dtype=numpy.uint32)
+    test_array = numpy.zeros((lines, samples), dtype=numpy.uint32)
     i = 0
     for tile in tiles_list:
-        (ystart, yend, xstart, xend) = tile
-        test_array[xstart:xend, ystart:yend] += tag_array[i]
+        yse, xse = tile
+        ystart, yend = yse
+        xstart, xend = xse
+        test_array[ystart:yend, xstart:xend] += tag_array[i]
         i += 1
     return test_array
 
