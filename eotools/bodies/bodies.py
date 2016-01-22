@@ -28,13 +28,6 @@ The docstrings are also out of date and consequently the documentation is curren
 """
 from __future__ import absolute_import
 import math
-import os
-import re
-import logging
-import xml.dom.minidom
-from datetime import timedelta
-
-import ephem
 
 
 class earth(object):
@@ -81,10 +74,6 @@ def geocentric_lat(lat_gd, sm_axis=earth.A, ecc2=earth.ECC2):
     Returns:
         Geocentric latitude (radians)
     """
-    # Is this parameter still being specified by anyone? Track via logs.
-    if sm_axis != earth.A:
-        logger.debug('sm_axis usage: %s', sm_axis)
-
     # return math.atan((1.0 - ecc2) * math.tan(lat_gd))
     return math.atan2(math.tan(lat_gd), 1.0 / (1.0 - ecc2))
 
@@ -100,10 +89,6 @@ def geodetic_lat(lat_gc, sm_axis=earth.A, ecc2=earth.ECC2):
     Returns:
         Geodetic latitude (radians)
     """
-    # Is this parameter still being specified by anyone? Track via logs.
-    if sm_axis != earth.A:
-        logger.debug('sm_axis usage: %s', sm_axis)
-
     return math.atan2(math.tan(lat_gc), (1.0 - ecc2))
 
 
