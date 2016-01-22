@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import unittest
-from eotools import GriddedGeoBox
+from eotools.geobox import GriddedGeoBox
 import affine
 import rasterio as rio
 from osgeo import osr
