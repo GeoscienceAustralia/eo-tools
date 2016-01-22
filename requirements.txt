@@ -1,0 +1,6 @@
+numpy==1.10.4
+scipy==0.16.1
+numexpr==2.4.6
+rasterio==0.31.0
+pandas==0.17.1
+geopandas==0.1.1
