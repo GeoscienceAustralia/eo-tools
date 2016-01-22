@@ -20,17 +20,12 @@ from __future__ import absolute_import
 from distutils.core import setup
 
 setup(name='eotools',
-      version='0.5b',
+      version='0.5',
       packages=[
             'eotools',
             'eotools.drivers',
-            'eotools.metadata',
             'eotools.bodies',
       ],
-      package_data={
-            'eotools.drivers': ['_scene_dataset.xml'],
-            'eotools.bodies': ['satellite.xml']
-      },
       requires=[
             'numpy',
             'scipy',
