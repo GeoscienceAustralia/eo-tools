@@ -42,11 +42,11 @@ def spatial_intersection(base_vector_fname, input_vector_fname, envelope=True):
     if envelope:
         for feat in input_df.geometry:
             wh |= base_df.intersects(feat.envelope)
-            fids = base_df[wh].index.values.tolist()
     else:
         for feat in input_df.geometry:
             wh |= base_df.intersects(feat)
-            fids = base_df[wh].index.values.tolist()
+
+    fids = base_df[wh].index.values.tolist()
 
     return fids
 
