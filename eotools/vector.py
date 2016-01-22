@@ -29,7 +29,7 @@ def spatial_intersection(base_vector_fname, input_vector_fname, envelope=True):
     :return:
         A `list` containing the FID's of the base vector.
     """
-    base_df =  geopandas.read_file(base_vector_fname)
+    base_df = geopandas.read_file(base_vector_fname)
     input_df = geopandas.read_file(input_vector_fname)
 
     if not is_same_crs(base_df.crs, input_df.crs):
@@ -41,11 +41,11 @@ def spatial_intersection(base_vector_fname, input_vector_fname, envelope=True):
     # but geopandas is quick enough just to loop over every feature
     if envelope:
         for feat in input_df.geometry:
-            wh |= dcdf.intersects(feat.envelope):
+            wh |= base_df.intersects(feat.envelope)
             fids = base_df[wh].index.values.tolist()
     else:
         for feat in input_df.geometry:
-            wh |= dcdf.intersects(feat):
+            wh |= base_df.intersects(feat)
             fids = base_df[wh].index.values.tolist()
 
     return fids
