@@ -18,8 +18,7 @@
 
 from __future__ import absolute_import
 from .bodies import earth
-from .bodies import Satellite
 from .bodies import geocentric_lat
 from .bodies import geodetic_lat
 
-__all__ = ['earth', 'Satellite', 'geocentric_lat', 'geodetic_lat']
+__all__ = ['earth', 'geocentric_lat', 'geodetic_lat']
