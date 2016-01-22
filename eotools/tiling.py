@@ -58,22 +58,19 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, generator=True):
 
     Example:
 
+        >>> from eotools.tiling import generate_tiles
         >>> tiles = generate_tiles(8624, 7567, xtile=1000, ytile=400, generator=False)
-        >>>
         >>> for tile in tiles:
         >>>     ystart = int(tile[0][0])
-        >>>     yend   = int(tile[0][1])
+        >>>     yend = int(tile[0][1])
         >>>     xstart = int(tile[1][0])
-        >>>     xend   = int(tile[1][1])
-        >>>     xsize  = int(xend - xstart)
-        >>>     ysize  = int(yend - ystart)
-        >>>
+        >>>     xend = int(tile[1][1])
+        >>>     xsize = int(xend - xstart)
+        >>>     ysize = int(yend - ystart)
         >>>     # When used to read data from disk
         >>>     subset = gdal_indataset.ReadAsArray(xstart, ystart, xsize, ysize)
-        >>>
         >>>     # The same method can be used to write to disk.
         >>>     gdal_outdataset.WriteArray(array, xstart, ystart)
-        >>>
         >>>     # Or simply move the tile window across an array
         >>>     subset = array[ystart:yend,xstart:xend] # 2D
         >>>     subset = array[:,ystart:yend,xstart:xend] # 3D

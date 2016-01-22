@@ -23,6 +23,7 @@ def band_math(expression, variables_dict):
         datatype will be returned.
 
     :example:
+        >>> import numpy
         >>> exp = "(b1 + b2) / 10.0"
         >>> a = numpy.random.randint(0, 256, (100, 100))
         >>> b = numpy.random.randint(0, 256, (100, 100))

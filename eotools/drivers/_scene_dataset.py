@@ -1395,9 +1395,9 @@ class SceneDataset(Dataset):
         This method should really be implemented on an a :py:class:`osgeo.osr.SpatialReference`, and hence would be
         accessed like
 
-            >>> sr = osr.SpatialReference()
-            >>> sr.ImportFromWkt(dataset.GetProjection())
-            >>> sr.IsGeographic()
+            # >>> sr = osr.SpatialReference()
+            # >>> sr.ImportFromWkt(dataset.GetProjection())
+            # >>> sr.IsGeographic()
 
         However, I don't trust that the ``dataset.GetProjection()`` part will work for :py:class:`SceneDataset`s
         (and it almost certainly won't for EQR) and since we have a :py:class:`osr.SpatialReference` lying around,

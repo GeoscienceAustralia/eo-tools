@@ -224,8 +224,8 @@ def default_bounds_getter(dataset):
     - Otherwise ``dataset`` must be an instance of :py:class:`gdal.Dataset` (a :py:class:`TypeError` is
         raised otherwise), and the shape is generated with:
 
-        >>> g = dataset.GetGeoTransform()
-        >>> return ImageShape(g[0], g[3], dataset.RasterXSize, dataset.RasterYSize, g[1], g[5], dataset.GetProjection())
+        #>>> g = dataset.GetGeoTransform()
+        #>>> return ImageShape(g[0], g[3], dataset.RasterXSize, dataset.RasterYSize, g[1], g[5], dataset.GetProjection())
 
     :param dataset:
         The dataset to extract the required elements from.

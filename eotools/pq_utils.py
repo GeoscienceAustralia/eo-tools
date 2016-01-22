@@ -110,6 +110,9 @@ def extract_pq_flags(array, flags=None, invert=None, check_zero=False,
 
     Example:
 
+        >>> import numpy
+        >>> from eotools import pq_utils
+        >>> img = numpy.random.randint(0, 32768, (100, 100))
         >>> # This will automatically get the default PQ and inversion flags
         >>> # and combine the result into a single boolean array
         >>> pq = pq_utils.extract_pq_flags(img, check_zero=True, combine=True)
