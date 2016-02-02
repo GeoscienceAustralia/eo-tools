@@ -25,7 +25,7 @@ from osgeo import gdal
 from eotools.geobox import GriddedGeoBox
 from eotools.tiling import generate_tiles
 from eotools.tiling import TiledOutput
-from eotools.stats.temporal_stats import temporal_stats
+from eotools.bulk_stats import bulk_stats
 
 gdal_2_numpy_dtypes = {1: 'uint8',
                        2: 'uint16',
@@ -478,7 +478,7 @@ class StackedDataset:
         for tile_n in range(self.n_tiles):
             tile = self.get_tile(tile_n)
             subset = self.read_tile(tile, raster_bands)
-            stats = temporal_stats(subset, no_data=self.no_data)
+            stats = bulk_stats(subset, no_data=self.no_data)
             outds.write_tile(stats, tile)
 
         outds.close()
