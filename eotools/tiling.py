@@ -75,7 +75,7 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, generator=True):
         >>>     subset = array[ystart:yend,xstart:xend] # 2D
         >>>     subset = array[:,ystart:yend,xstart:xend] # 3D
     """
-    def tiles_generator(samples, lines, xstart, ystart):
+    def create_tiles(samples, lines, xstart, ystart):
         """
         Creates a generator object for the tiles.
         """
@@ -91,30 +91,14 @@ def generate_tiles(samples, lines, xtile=100, ytile=100, generator=True):
                     xend = samples
                 yield ((ystep, yend), (xstep, xend))
 
-    def tiles_list(samples, lines, xstart, ystart):
-        """
-        Creates a list of tiles.
-        """
-        tiles = []
-        for ystep in ystart:
-            if ystep + ytile < lines:
-                yend = ystep + ytile
-            else:
-                yend = lines
-            for xstep in xstart:
-                if xstep + xtile < samples:
-                    xend = xstep + xtile
-                else:
-                    xend = samples
-                tiles.append(((ystep, yend), (xstep, xend)))
-        return tiles
-
     xstart = numpy.arange(0, samples, xtile)
     ystart = numpy.arange(0, lines, ytile)
+
+    tiles = create_tiles(samples, lines, xstart, ystart)
     if generator:
-        return tiles_generator(samples, lines, xstart, ystart)
+        return tiles
     else:
-        return tiles_list(samples, lines, xstart, ystart)
+        return list(tiles)
 
 
 class TiledOutput(object):
