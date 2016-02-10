@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 import collections
 
+from affine import Affine
 import gdal
 
 
@@ -40,6 +41,9 @@ def convert_coordinates(geotransform, xy, to_map=True, centre=False):
         co-ordinate pairs, then a list of (x, y) co-ordinate pairs
         will be returned, eg [(x, y), (x, y), (x, y)].
     """
+    # define the affine transformation
+    affine = Affine.from_gdal(*geotransform)
+
     # If we have a list of tuples otherwise we'll get an int
     if isinstance(xy[0], collections.Sequence):
         points = []
@@ -47,24 +51,19 @@ def convert_coordinates(geotransform, xy, to_map=True, centre=False):
             if centre:
                 xy = [(x + 0.5, y + 0.5) for x, y in xy]
             for point in xy:
-                x = point[0] * geotransform[1] + geotransform[0]
-                y = geotransform[3] - point[1] * abs(geotransform[5])
-                points.append((x, y))
+                xy = point * affine
+                points.append(xy)
         else:
-            invgt = gdal.InvGeoTransform(geotransform)[1]
             for point in xy:
-                x = int(point[0] * invgt[1] + invgt[0])
-                y = int(invgt[3] - point[1] * abs(invgt[5]))
-                points.append((x, y))
+                x, y = point * ~affine
+                points.append((int(x), int(y)))
         return points
     else:
         if to_map:
             if centre:
                 xy = tuple(v + 0.5 for v in xy)
-            x = xy[0] * geotransform[1] + geotransform[0]
-            y = geotransform[3] - xy[1] * abs(geotransform[5])
+            x, y = xy * affine
         else:
-            invgt = gdal.InvGeoTransform(geotransform)[1]
-            x = int(xy[0] * invgt[1] + invgt[0])
-            y = int(invgt[3] - xy[1] * abs(invgt[5]))
+            xy = xy * ~affine
+            x, y = tuple(int(v) for v in xy)
         return x, y
