@@ -27,7 +27,6 @@ makes some of the code harder to follow.
 from __future__ import absolute_import
 import numpy
 import logging
-from .meta import print_call
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,6 @@ DEFAULT_ORIGIN = (0, 0)
 DEFAULT_SHAPE = (8, 8)
 
 
-@print_call(logger.debug)
 def bilinear(shape, fUL, fUR, fLR, fLL, dtype=numpy.float64):
     """
     Bilinear interpolation of four scalar values.
@@ -70,7 +68,6 @@ def bilinear(shape, fUL, fUR, fLR, fLL, dtype=numpy.float64):
     return s * (t * fLR + (1.0 - t) * fLL) + (1.0 - s) * (t * fUR + (1.0 - t) * fUL)
 
 
-@print_call(logger.debug)
 def indices(origin=DEFAULT_ORIGIN, shape=DEFAULT_SHAPE):
     """
     Generate corner indices for a grid block.
@@ -88,7 +85,6 @@ def indices(origin=DEFAULT_ORIGIN, shape=DEFAULT_SHAPE):
             origin[1], origin[1] + shape[1] - 1)
 
 
-@print_call(logger.debug)
 def subdivide(origin=DEFAULT_ORIGIN, shape=DEFAULT_SHAPE):
     """
     Generate indices for grid sub-blocks.
@@ -118,7 +114,6 @@ def subdivide(origin=DEFAULT_ORIGIN, shape=DEFAULT_SHAPE):
     }
 
 
-@print_call(logger.debug)
 def interpolate_block(origin=DEFAULT_ORIGIN, shape=DEFAULT_SHAPE, eval_func=None, grid=None):
     """
     Interpolate a grid block.
@@ -157,7 +152,6 @@ def interpolate_block(origin=DEFAULT_ORIGIN, shape=DEFAULT_SHAPE, eval_func=None
     grid[i0:i1 + 1, j0:j1 + 1] = bilinear(shape, fUL, fUR, fLR, fLL)
 
 
-@print_call(logger.debug)
 def interpolate_grid(depth=0, origin=DEFAULT_ORIGIN, shape=DEFAULT_SHAPE, eval_func=None, grid=None):
     """
     Interpolate a data grid.
