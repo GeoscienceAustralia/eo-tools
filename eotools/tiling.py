@@ -291,3 +291,26 @@ class TiledOutput(object):
         self.out_bands = None
         self.outds = None
         self.closed = True
+
+
+def scatter(iterable, n):
+    """
+    Evenly scatters an interable by `n` blocks.
+    Sourced from:
+    http://stackoverflow.com/questions/2130016/splitting-a-list-of-arbitrary-size-into-only-roughly-n-equal-parts
+
+    :param iterable:
+        An iterable or preferably a 1D list or array.
+
+    :param n:
+        An integer indicating how many blocks to create.
+
+    :return:
+        A `list` consisting of `n` blocks of roughly equal size, each
+        containing elements from `iterable`.
+    """
+
+    q, r = len(iterable) // n, len(iterable) % n
+    res = (iterable[i * q + min(i, r):(i + 1) * q + min(i + 1, r)]
+           for i in range(n))
+    return list(res)
