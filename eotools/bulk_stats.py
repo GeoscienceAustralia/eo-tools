@@ -97,7 +97,7 @@ def bulk_stats(array, no_data=None, double=False, as_bip=False):
         msg = "Array must be 3D! Received: {}.".format(len(dims))
         raise TypeError(msg)
 
-    bands = dims[0]
+    bands = dims[0]  # silence pyflakes
     cols = dims[2]
     rows = dims[1]
 
@@ -280,10 +280,10 @@ def bulk_stats(array, no_data=None, double=False, as_bip=False):
         flat_sort = numpy.sort(array, axis=0).ravel()
 
         # q2_offset, median locations
-        q2_idx = numexpr.evaluate("((vld_obsv / 2) + ((vld_obsv % 2) - 1))")
+        q2_idx = numexpr.evaluate("((vld_obsv / 2) + ((vld_obsv % 2) - 1))")  # silence pyflakes
 
         # array offsets
-        a_off = numpy.arange(cols * rows).reshape((rows, cols))
+        a_off = numpy.arange(cols * rows).reshape((rows, cols))  # silence pyflakes
 
         # turn the locations into a useable 1D index
         exp = "(q2_idx * cols * rows + a_off)"
@@ -295,8 +295,8 @@ def bulk_stats(array, no_data=None, double=False, as_bip=False):
         stats[10] = sort_orig_idx[idx_1D]
 
         # 1st quantile
-        length = numexpr.evaluate("q2_idx + 1")
-        q1_idx = numexpr.evaluate("((length / 2) + ((length % 2) - 1))")
+        length = numexpr.evaluate("q2_idx + 1") # silence pyflakes
+        q1_idx = numexpr.evaluate("((length / 2) + ((length % 2) - 1))") # silence pyflakes
         exp = "(q1_idx * cols * rows + a_off)"
         idx_1D = numexpr.evaluate(exp).astype('int')  # 1D index
         stats[11] = flat_sort[idx_1D]  # get 1st quantile
