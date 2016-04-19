@@ -20,7 +20,7 @@ def gdal_to_numpy_dtype(val):
            9: 'complex64',
            10: 'complex64',
            11: 'complex128',
-           }.get(val,'float64')
+           }.get(val, 'float64')
 
 
 class WaterClassifier(object):
@@ -49,7 +49,7 @@ class WaterClassifier(object):
                9: 'complex64',
                10: 'complex64',
                11: 'complex128',
-               }.get(val,'float64')
+               }.get(val, 'float64')
 
     def classify(self, images, float64=False):
         """
@@ -114,7 +114,7 @@ class WaterClassifier(object):
         logger = logging.getLogger("WaterClasserfier")
         logger.debug("Started")
 
-        def band_ratio(a,b):
+        def band_ratio(a, b):
             """
             Calculates a normalised ratio index.
             """
@@ -144,7 +144,7 @@ class WaterClassifier(object):
             elif (dtype != 'float32'):
                 images = images.astype('float32')
 
-        classified = numpy.ones((rows,cols), dtype='uint8')
+        classified = numpy.ones((rows, cols), dtype='uint8')
 
         NDI_52 = band_ratio(images[4], images[1])
         NDI_43 = band_ratio(images[3], images[2])
@@ -252,7 +252,7 @@ class WaterClassifier(object):
         _tmp &= r18
 
         r19 = b1 <= 249.5
-        classified[_tmp & ~r19] = 0 # Node 38
+        classified[_tmp & ~r19] = 0  # Node 38
         _tmp &= r19
 
         r20 = NDI_43 <= 0.45
@@ -309,7 +309,7 @@ if __name__ == '__main__':
     ds7 = gdal.Open(B7_Stack)
 
     # Create a list of opened datasets
-    datasets = [ds1,ds2,ds3,ds4,ds5,ds7]
+    datasets = [ds1, ds2, ds3, ds4, ds5, ds7]
 
     # Get the number of bands, columns, rows, spectral_bands
     nb = ds1.RasterCount
@@ -335,8 +335,8 @@ if __name__ == '__main__':
 
     # Loop over each timeslice (number of bands per spectral band stack).
     for i in range(nb):
-        images = numpy.zeros((sb,rows,cols), dtype=dtype)
-        bground = numpy.zeros((rows,cols), dtype='bool')
+        images = numpy.zeros((sb, rows, cols), dtype=dtype)
+        bground = numpy.zeros((rows, cols), dtype='bool')
         for j in range(len(datasets)):
             band = datasets[j].GetRasterBand(i+1)
             images[j] = band.ReadAsArray()

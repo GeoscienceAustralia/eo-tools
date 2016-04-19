@@ -4,7 +4,6 @@ from __future__ import absolute_import
 import collections
 
 from affine import Affine
-import gdal
 
 
 def convert_coordinates(geotransform, xy, to_map=True, centre=False):
