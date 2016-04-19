@@ -4,7 +4,10 @@ from __future__ import absolute_import
 
 import geopandas
 import numpy
+import rasterio
+from rasterio import features
 from rasterio.crs import is_same_crs
+import fiona
 
 
 def spatial_intersection(base_vector_fname, input_vector_fname, envelope=True):
@@ -66,3 +69,58 @@ def retrieve_attribute_table(vector_fname):
     df.drop('geometry', axis=1, inplace=True)
 
     return df
+
+
+def polygonize_image_boundary(image_fname, out_fname, band=1, no_data=0):
+    """
+    Creates an ESRI shapefile of the image data & no data regions.
+
+    :param image_fname:
+        A `string` containing the full file path name to a
+        GDAL compliant rasterio file.
+
+    :param out_fname:
+        A `string` containing the full file path name to be used
+        for resulting polganized file.
+
+    :param band:
+        An `integer` corresponding to the band number to be used
+        for polganizing the data and no data regions.
+        Default band is 1.
+
+    :param no_data:
+        If the source image file contains a no data value, it will
+        be used for defining the no data area. If none is found, then
+        `no_data` will be used. Default value is 0.
+    """
+    with rasterio.open(image_fname, 'r') as ds:
+        img = ds.read(band)
+        transform = ds.affine
+        crs = ds.crs
+        nodata = ds.nodatavals[band -1]
+
+    if nodata is None:
+        nodata = no_data
+
+    # classify
+    mask = img != nodata
+    img[mask] = 1
+    img[~mask] = 0
+
+    # extract
+    shapes = features.shapes(img, transform=transform)
+
+    # vector definitions
+    schema = {'geometry': 'Polygon',
+              'properties': {'class': 'str:10'}}
+    kwargs = {'driver': 'ESRI Shapefile',
+              'crs': crs,
+              'schema': schema}
+    class_key = {0: 'no data',
+                 1: 'data'}
+
+    # output
+    with fiona.open(out_fname, 'w', **kwargs) as src:
+        for shape, val in shapes:
+            src.write({'geometry': shape,
+                       'properties': {'class': class_key[val]}})
