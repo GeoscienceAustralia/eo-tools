@@ -7,6 +7,22 @@ import argparse
 from osgeo import gdal
 
 
+def gdal_to_numpy_dtype(val):
+    return {
+           1: 'uint8',
+           2: 'uint16',
+           3: 'int16',
+           4: 'uint32',
+           5: 'int32',
+           6: 'float32',
+           7: 'float64',
+           8: 'complex64',
+           9: 'complex64',
+           10: 'complex64',
+           11: 'complex128',
+           }.get(val,'float64')
+
+
 class WaterClassifier(object):
     """
     WaterClassifier instance classify NBAR images by locating the
@@ -148,7 +164,7 @@ class WaterClassifier(object):
         r1 = NDI_52 <= -0.01
 
         r2 = b1 <= 2083.5
-        classified[r1 & ~r2] = 0 # Node 3
+        classified[r1 & ~r2] = 0  # Node 3
 
         r3 = b7 <= 323.5
         _tmp = r1 & r2
@@ -156,33 +172,33 @@ class WaterClassifier(object):
         _tmp &= ~r3
 
         r4 = NDI_43 <= 0.61
-        classified[_tmp2 & r4] = 128 # Node 6
-        classified[_tmp2 & ~r4] = 0 # Node 7
+        classified[_tmp2 & r4] = 128  # Node 6
+        classified[_tmp2 & ~r4] = 0  # Node 7
 
         r5 = b1 <= 1400.5
         _tmp2 = _tmp & ~r5
         r6 = NDI_43 <= -0.01
-        classified[_tmp2 & r6] = 128 # Node 10
-        classified[_tmp2 & ~r6] = 0 # Node 11
+        classified[_tmp2 & r6] = 128  # Node 10
+        classified[_tmp2 & ~r6] = 0  # Node 11
 
         _tmp &= r5
 
         r7 = NDI_72 <= -0.23
         _tmp2 = _tmp & ~r7
         r8 = b1 <= 379
-        classified[_tmp2 & r8] = 128 # Node 14
-        classified[_tmp2 & ~r8] = 0 # Node 15
+        classified[_tmp2 & r8] = 128  # Node 14
+        classified[_tmp2 & ~r8] = 0  # Node 15
 
         _tmp &= r7
 
         r9 = NDI_43 <= 0.22
-        classified[_tmp & r9] = 128 # Node 17
+        classified[_tmp & r9] = 128  # Node 17
 
         _tmp &= ~r9
 
         r10 = b1 <= 473
-        classified[_tmp & r10] = 128 # Node 19
-        classified[_tmp & ~r10] = 0 # Node 20
+        classified[_tmp & r10] = 128  # Node 19
+        classified[_tmp & ~r10] = 0  # Node 20
 
         # Left branch is completed; cleanup
         logger.debug("B4 cleanup 1")
@@ -198,19 +214,19 @@ class WaterClassifier(object):
 
         r12 = b1 <= 334.5
         _tmp2 = _tmp & ~r12
-        classified[_tmp2] = 0 # Node 23
+        classified[_tmp2] = 0  # Node 23
 
         _tmp &= r12
 
         r13 = NDI_43 <= 0.54
         _tmp2 = _tmp & ~r13
-        classified[_tmp2] = 0 # Node 25
+        classified[_tmp2] = 0  # Node 25
 
         _tmp &= r13
 
         r14 = NDI_52 <= 0.12
         _tmp2 = _tmp & r14
-        classified[_tmp2] = 128 # Node 27
+        classified[_tmp2] = 128  # Node 27
 
         _tmp &= ~r14
 
@@ -218,21 +234,21 @@ class WaterClassifier(object):
         _tmp2 = _tmp & r15
 
         r16 = b1 <= 129.5
-        classified[_tmp2 & r16] = 128 # Node 31
-        classified[_tmp2 & ~r16] = 0 # Node 32
+        classified[_tmp2 & r16] = 128  # Node 31
+        classified[_tmp2 & ~r16] = 0  # Node 32
 
         _tmp &= ~r15
 
         r17 = b1 <= 300.5
         _tmp2 = _tmp & ~r17
         _tmp &= r17
-        classified[_tmp] = 128 # Node 33
-        classified[_tmp2] = 0 # Node 34
+        classified[_tmp] = 128  # Node 33
+        classified[_tmp2] = 0  # Node 34
 
         _tmp = r1 & ~r11
 
         r18 = NDI_52 <= 0.34
-        classified[_tmp & ~r18] = 0 # Node 36
+        classified[_tmp & ~r18] = 0  # Node 36
         _tmp &= r18
 
         r19 = b1 <= 249.5
@@ -240,16 +256,16 @@ class WaterClassifier(object):
         _tmp &= r19
 
         r20 = NDI_43 <= 0.45
-        classified[_tmp & ~r20] = 0 # Node 40
+        classified[_tmp & ~r20] = 0  # Node 40
         _tmp &= r20
 
         r21 = b3 <= 364.5
-        classified[_tmp & ~r21] = 0 # Node 42
+        classified[_tmp & ~r21] = 0  # Node 42
         _tmp &= r21
 
         r22 = b1 <= 129.5
-        classified[_tmp & r22] = 128 # Node 44
-        classified[_tmp & ~r22] = 0 # Node 45
+        classified[_tmp & r22] = 128  # Node 44
+        classified[_tmp & ~r22] = 0  # Node 45
 
         logger.debug("completed")
 
@@ -307,7 +323,7 @@ if __name__ == '__main__':
 
     # Setup the output dataset
     driver = gdal.GetDriverByName(driver)
-    outds = driver.Create(outfile, cols, rows, nb, 1) # Uint8
+    outds = driver.Create(outfile, cols, rows, nb, 1)  # Uint8
     outds.SetGeoTransform(ds1.GetGeoTransform())
     outds.SetProjection(ds1.GetProjection())
     outband = []
