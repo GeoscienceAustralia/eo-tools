@@ -71,7 +71,8 @@ def retrieve_attribute_table(vector_fname):
     return df
 
 
-def polygonize_image_boundary(image_fname, out_fname, band=1, no_data=0):
+def polygonize_image_boundary(image_fname, out_fname, band=1, no_data=0,
+                              union=False):
     """
     Creates an ESRI shapefile of the image data & no data regions.
 
@@ -90,24 +91,43 @@ def polygonize_image_boundary(image_fname, out_fname, band=1, no_data=0):
 
     :param no_data:
         If the source image file contains a no data value, it will
-        be used for defining the no data area. If none is found, then
-        `no_data` will be used. Default value is 0.
+        be used for defining the no data regions. If none is found,
+        then `no_data` will be used. Default value is 0.
+
+    :param union:
+        If set to `True`, then all bands will be used in determining
+        the data/no data regions using 'or' logic. This will classify
+        a `data` pixel if any co-existing pixel is considered to be
+        `data`. Default is `False`, whereby only a single band as
+        defined by the `band` parameter will define the data/no data
+        regions.
     """
     with rasterio.open(image_fname, 'r') as ds:
-        img = ds.read(band)
         transform = ds.affine
         crs = ds.crs
-        nodata = ds.nodatavals[band -1]
+        mask = numpy.zeros((ds.height, ds.width), dtype='bool')
+        if union:
+            for i in range(1, ds.count):
+                img = ds.read(i)
+                nodata = ds.nodatavals[i - 1]
 
-    if nodata is None:
-        nodata = no_data
+                if nodata is None:
+                    nodata = no_data
 
-    # classify
-    mask = img != nodata
-    img[mask] = 1
-    img[~mask] = 0
+                # classify
+                mask |= img != nodata
+        else:
+            img = ds.read(band)
+            nodata = ds.nodatavals[band - 1]
+
+            if nodata is None:
+                nodata = no_data
+
+            # classify
+            mask |= img != nodata
 
     # extract
+    img = mask.astype('uint8')
     shapes = features.shapes(img, transform=transform)
 
     # vector definitions
