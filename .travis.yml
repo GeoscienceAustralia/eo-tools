@@ -19,6 +19,7 @@ install:
   - travis_retry pip install pyflakes pep8 GDAL==1.10.0
   # No tests are run yet... so no requirements.
   - travis_retry pip install -r requirements.txt
+  - python setup.py install
 script: 
     # Our line length is very lenient for legacy reasons.
     - pep8 eotools --max-line-length 200
