@@ -18,9 +18,14 @@ install:
   # GDAL python version must match system libgdal version.
   - travis_retry pip install pyflakes pep8 GDAL==1.10.0
   # No tests are run yet... so no requirements.
-  # - travis_retry pip install -r requirements.txt
+  - travis_retry pip install -r requirements.txt
 script: 
     # Our line length is very lenient for legacy reasons.
     - pep8 eotools --max-line-length 200
     # - pyflakes eotools 
+    - python tests/test_blrb.py
+    - python tests/test_bulk_stats.py
+    - python tests/test_GriddedGeoBox.py
+    - python tests/test_tiling.py
+    - python tests/test_vincenty.py
 cache: apt
